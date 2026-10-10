@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#111111">
+
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%23EAB308'/%3E%3Cpath d='M40 120 C40 72 72 48 96 48 C120 48 152 72 152 120' stroke='%23111' stroke-width='16' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>Stratus Map — Weather your route</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#ffffff;
+  --cloud:#1a1a1a;
+  --cloud2:#2a2a2a;
+  --mist:#888880;
+  --sky:#EAB308;
+  --sky2:#ca9a06;
+  --sky-pale:#2d2500;
+  --amber:#EAB308;
+  --storm:#ef4444;
+  --green:#22c55e;
+  --font-display:'Syne',sans-serif;
+  --font-body:'DM Sans',sans-serif;
+  --r:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#111;color:var(--ink);font-family:var(--font-body);overscroll-behavior:none}
+
+/* ── Shell ── */
+.shell{display:flex;flex-direction:column;height:100dvh;max-width:1280px;margin:0 auto}
+
+/* ── Topbar ── */
+.topbar{padding:10px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--cloud2);background:#111;gap:8px;flex-shrink:0}
+.wordmark{font-family:var(--font-display);font-weight:800;font-size:18px;letter-spacing:-1px;color:var(--ink);display:flex;align-items:center;gap:6px;white-space:nowrap}
+.wordmark-icon{width:26px;height:26px;background:var(--sky);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.wordmark-icon svg{width:14px;height:14px;fill:none;stroke:#111;stroke-width:2;stroke-linecap:round}
+.tagline{font-size:11px;color:var(--mist);letter-spacing:.5px;font-style:italic}
+.top-btn{background:transparent;border:1.5px solid var(--cloud2);border-radius:8px;color:var(--mist);padding:6px 10px;font-family:var(--font-display);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .2s;display:flex;align-items:center;gap:5px;min-height:34px}
+#mode-btn.on{border-color:var(--sky);color:var(--sky);background:var(--sky-pale)}
+#gps-btn.active{border-color:var(--green);color:var(--green);background:rgba(34,197,94,.1)}
+#gps-btn.active::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:blink .8s ease-in-out infinite}
+
+/* ── Stage bar (roadbook) ── */
+.stagebar{display:none;padding:8px 12px;background:#1a1a1a;border-bottom:1px solid var(--cloud2);gap:8px;align-items:stretch;flex-shrink:0}
+.stagebar.visible{display:flex}
+.stage-chips{display:flex;gap:6px;overflow-x:auto;flex:1;min-width:0;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.stage-chips::-webkit-scrollbar{display:none}
+.chip{flex-shrink:0;background:var(--cloud);border:1.5px solid var(--cloud2);border-left:4px solid var(--c);border-radius:var(--r);padding:6px 10px;color:var(--ink);text-align:left;cursor:pointer;font-family:var(--font-body);min-height:44px;position:relative}
+.chip .d{font-family:var(--font-display);font-size:9px;font-weight:700;color:var(--mist);text-transform:uppercase;letter-spacing:1px}
+.chip .d b{color:var(--ink);font-size:12px;margin-right:3px}
+.chip .r{display:block;font-size:11px;white-space:nowrap;margin-top:1px}
+.chip .k{font-family:var(--font-display);font-size:9px;color:var(--mist)}
+.chip.on{border-color:var(--c);background:#232323}
+.chip.today::after{content:'HOY';position:absolute;top:4px;right:6px;font-family:var(--font-display);font-size:8px;font-weight:800;color:#111;background:var(--green);border-radius:3px;padding:1px 4px}
+.btn-gpx{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1px;background:transparent;color:var(--sky);border:1.5px solid var(--sky);border-radius:var(--r);padding:4px 10px;font-family:var(--font-display);font-size:11px;font-weight:800;cursor:pointer;min-height:44px;flex-shrink:0}
+.btn-gpx small{font-size:8px;font-weight:600;color:var(--mist);letter-spacing:.5px}
+.btn-gpx.loaded{background:var(--sky-pale)}
+
+/* ── Search ── */
+.searchbar{padding:10px 16px;background:#1a1a1a;border-bottom:1px solid var(--cloud2);display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;flex-shrink:0}
+body.stage .searchbar{display:none}
+.sfield{display:flex;flex-direction:column;gap:3px;flex:1;min-width:130px}
+.sfield label{font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--mist)}
+.sfield input{border:1.5px solid var(--cloud2);background:var(--cloud);border-radius:var(--r);padding:8px 12px;font-family:var(--font-body);font-size:15px;color:var(--ink);outline:none;transition:border .15s;min-height:44px}
+.sfield input:focus{border-color:var(--sky);background:#222}
+.btn-calc{background:var(--sky);color:#111;border:none;border-radius:var(--r);padding:10px 20px;font-family:var(--font-display);font-size:14px;font-weight:700;letter-spacing:.5px;cursor:pointer;white-space:nowrap;transition:background .15s;align-self:flex-end;min-height:44px}
+.btn-calc:hover{background:var(--sky2)}
+.btn-calc:disabled{background:var(--mist);cursor:not-allowed}
+.btn-add{background:transparent;color:var(--sky);border:1.5px solid var(--sky);border-radius:var(--r);padding:8px 14px;font-family:var(--font-display);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .15s;min-height:44px}
+.btn-add:hover{background:var(--sky-pale)}
+.wp-row{display:flex;align-items:flex-end;gap:8px}
+.wp-handle{color:var(--mist);font-size:10px;padding-bottom:14px;flex-shrink:0}
+.btn-remove{background:transparent;border:none;color:var(--mist);font-size:16px;cursor:pointer;padding:10px 6px;line-height:1;transition:color .15s;flex-shrink:0;min-height:44px}
+.btn-remove:hover{color:var(--storm)}
+.wp-opt-tag{font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--sky);background:var(--sky-pale);border-radius:4px;padding:2px 6px;margin-left:6px}
+
+/* ── Status ── */
+.statusbar{padding:6px 16px;background:#0a0a0a;font-family:var(--font-display);font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--mist);display:flex;align-items:center;gap:8px;min-height:28px;flex-shrink:0}
+.s-dot{width:6px;height:6px;border-radius:50%;background:var(--mist);flex-shrink:0}
+.s-dot.go{background:var(--green);box-shadow:0 0 6px var(--green)}
+.s-dot.err{background:var(--storm)}
+.s-dot.spin{background:var(--amber);animation:blink .5s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* ── Weather Band ── */
+#wx-band{display:none;background:#111;border-bottom:2px solid var(--cloud2);overflow-x:auto;flex-shrink:0;-webkit-overflow-scrolling:touch}
+#wx-band.visible{display:flex;align-items:stretch}
+.wx-node{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:100px;padding:8px 6px;position:relative;cursor:pointer;transition:background .15s;border-right:1px solid var(--cloud2);flex-shrink:0}
+.wx-node:last-child{border-right:none}
+.wx-node:hover,.wx-node:active{background:#1a1a1a}
+.wx-node.active{background:#1a1500;border-bottom:3px solid var(--sky)}
+.wx-node.named .wx-node-label{color:var(--ink)}
+.wx-node-label{font-family:var(--font-display);font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--mist);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px;text-align:center}
+.wx-node-eta{font-family:var(--font-display);font-size:11px;font-weight:800;color:var(--sky);margin-bottom:2px}
+.wx-node-icon{font-size:26px;line-height:1;margin-bottom:3px}
+.wx-node-temp{font-family:var(--font-display);font-size:18px;font-weight:800;color:#fff;letter-spacing:-1px}
+.wx-node-pills{display:flex;gap:3px;margin-top:4px;flex-wrap:wrap;justify-content:center}
+.pill{display:flex;align-items:center;gap:3px;padding:2px 5px;border-radius:20px;font-family:var(--font-display);font-size:9px;font-weight:700;white-space:nowrap}
+.pill-wind{background:#1a2535;color:#60a5fa}
+.pill-wind.warn{background:#2d1500;color:#fb923c}
+.pill-wind.danger{background:#2d0000;color:#f87171}
+.pill-rain{background:#0d1f2d;color:#38bdf8}
+.pill-sun{background:#1a1500;color:#EAB308}
+.pill-snow{background:#1a1f2d;color:#a5b4fc}
+.pill-fog{background:#1f1f1f;color:#9ca3af}
+.pill-storm{background:#2d0a00;color:#f97316}
+.pill-night{background:#15152d;color:#a5b4fc}
+.wx-alert-dot{position:absolute;top:5px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--storm);box-shadow:0 0 6px var(--storm);animation:blink .8s ease-in-out infinite}
+
+/* ── Body: map + panel ── */
+.body{flex:1;min-height:0;display:grid;grid-template-columns:1fr 340px;overflow:hidden}
+@media(max-width:768px){
+  .body{grid-template-columns:1fr;grid-template-rows:1fr 280px}
+  body.stage .body{grid-template-rows:1fr 46%}
+  #wx-band .wx-node{min-width:88px;padding:6px 4px}
+  .wx-node-icon{font-size:22px}
+  .wx-node-temp{font-size:16px}
+  .searchbar{padding:8px 12px;gap:8px}
+  .sfield input{font-size:16px}/* prevent iOS zoom */
+  .topbar{padding:8px 12px}
+}
+@media(max-width:480px){
+  .body{grid-template-rows:1fr 240px}
+  .tagline{display:none}
+  .statusbar{font-size:9px;padding:5px 12px}
+  .wordmark{font-size:15px}
+}
+
+/* ── Map ── */
+#map{min-height:0;min-width:0;width:100%;height:100%}
+.leaflet-container{width:100%!important;height:100%!important;background:#111!important}
+.leaflet-tile{filter:saturate(.2) brightness(.5) invert(1) hue-rotate(180deg)}
+.leaflet-popup-content-wrapper{background:#1a1a1a!important;border:1.5px solid var(--cloud2)!important;border-radius:12px!important;box-shadow:0 8px 32px rgba(0,0,0,.4)!important;color:var(--ink)!important;font-family:var(--font-body)!important}
+.leaflet-popup-tip{background:#1a1a1a!important}
+.leaflet-popup-content{margin:14px 16px!important}
+.leaflet-control-zoom a{background:#1a1a1a!important;color:var(--ink)!important;border:1px solid var(--cloud2)!important;min-width:36px;min-height:36px;line-height:36px}
+.leaflet-tooltip{background:#1a1a1a;color:#fff;border:1px solid var(--cloud2);font-family:var(--font-body);font-size:11px}
+
+/* ── GPS position marker ── */
+.gps-dot{width:18px;height:18px;border-radius:50%;background:#3b82f6;border:3px solid #fff;box-shadow:0 0 0 4px rgba(59,130,246,.3),0 2px 8px rgba(0,0,0,.5)}
+.gps-dot.pulse{animation:gps-pulse 2s ease-in-out infinite}
+@keyframes gps-pulse{0%,100%{box-shadow:0 0 0 4px rgba(59,130,246,.3),0 2px 8px rgba(0,0,0,.5)}50%{box-shadow:0 0 0 10px rgba(59,130,246,.1),0 2px 8px rgba(0,0,0,.5)}}
+
+#next-alert{display:none;position:absolute;bottom:16px;left:50%;transform:translateX(-50%);z-index:1000;background:rgba(17,17,17,.92);border:1.5px solid var(--storm);border-radius:12px;padding:10px 16px;font-family:var(--font-display);font-size:12px;font-weight:700;color:var(--storm);white-space:nowrap;pointer-events:none;backdrop-filter:blur(8px);max-width:92%;overflow:hidden;text-overflow:ellipsis}
+#next-alert.visible{display:flex;align-items:center;gap:8px}
+
+/* ── Compact wx marker ── */
+.wx-pin{display:flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer;transition:transform .15s}
+.wx-pin:hover{transform:scale(1.2)}
+.wx-pin-ico{font-size:18px;line-height:1;filter:drop-shadow(0 1px 3px rgba(0,0,0,.6))}
+.wx-pin-temp{font-family:'Syne',sans-serif;font-size:10px;font-weight:800;color:#fff;background:rgba(0,0,0,.65);border-radius:4px;padding:1px 4px;white-space:nowrap;letter-spacing:-.3px}
+.wx-pin-wind{font-family:'Syne',sans-serif;font-size:9px;font-weight:800;background:rgba(0,0,0,.65);border-radius:4px;padding:1px 4px;white-space:nowrap;display:flex;align-items:center;gap:2px}
+.sm{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;border:2.5px solid rgba(255,255,255,.15);box-shadow:0 3px 12px rgba(0,0,0,.5);cursor:pointer;transition:transform .15s;background:#1a1a1a}
+.sm:hover{transform:scale(1.15)}
+.sm.o{border-color:var(--green);background:#0a1f0a}
+.sm.d{border-color:var(--storm);background:#1f0a0a}
+.sm.w{border-color:var(--sky);background:#1a1500}
+
+/* ── Sidebar ── */
+.sidebar{display:flex;flex-direction:column;overflow-y:auto;background:#1a1a1a;border-left:1px solid var(--cloud2);-webkit-overflow-scrolling:touch}
+@media(max-width:768px){.sidebar{border-left:none;border-top:1px solid var(--cloud2)}}
+
+.rb-strip{padding:10px 12px;border-bottom:1px solid var(--cloud2);overflow-x:auto;display:flex;gap:7px;flex-shrink:0;-webkit-overflow-scrolling:touch}
+.rb-card{min-width:72px;background:var(--cloud);border:1.5px solid var(--cloud2);border-radius:var(--r);padding:8px 6px;cursor:pointer;transition:all .15s;flex-shrink:0;position:relative;text-align:center}
+.rb-card:hover,.rb-card:active{border-color:var(--sky)}
+.rb-card.on{border-color:var(--sky);background:var(--sky-pale)}
+.rb-card.warn{border-color:var(--amber)}
+.rb-km{font-family:var(--font-display);font-size:8px;font-weight:700;color:var(--mist);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
+.rb-eta{font-family:var(--font-display);font-size:10px;font-weight:800;color:var(--sky)}
+.rb-ico{font-size:18px;display:block;margin-bottom:2px}
+.rb-tmp{font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--ink)}
+.rb-city{font-size:9px;color:var(--mist);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60px}
+.rb-aldot{position:absolute;top:4px;right:4px;width:6px;height:6px;border-radius:50%;background:var(--amber)}
+
+.tele{padding:12px 14px;border-bottom:1px solid var(--cloud2);flex-shrink:0}
+.tele-head{display:flex;align-items:baseline;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+.tele-city{font-family:var(--font-display);font-size:17px;font-weight:800;letter-spacing:-.5px;color:var(--ink)}
+.tele-meta{font-size:11px;color:var(--mist)}
+.tele-when{font-size:11px;color:var(--sky);font-weight:500;margin-bottom:4px}
+.tele-temp{font-family:var(--font-display);font-size:40px;font-weight:400;color:var(--ink);letter-spacing:-2px;margin-right:6px}
+.tele-desc{font-size:12px;color:var(--mist);margin-top:2px}
+.tele-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:10px}
+.tc{background:var(--cloud);border-radius:var(--r);padding:9px 10px;border:1px solid var(--cloud2)}
+.tc-l{font-family:var(--font-display);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--mist);margin-bottom:3px}
+.tc-v{font-family:var(--font-display);font-size:17px;font-weight:700;color:var(--ink)}
+.tc-v.red{color:var(--storm)}
+.tc-v.amb{color:var(--amber)}
+.tc-u{font-size:10px;font-weight:400;color:var(--mist)}
+.tele-alert{margin-top:8px;padding:8px 10px;background:#1a1500;border:1px solid #3d3000;border-radius:var(--r);font-size:11px;font-weight:500;color:#EAB308;display:flex;gap:6px}
+
+.alerts-panel{padding:10px 14px;background:#1a1500;border-bottom:1px solid #3d3000;flex-shrink:0}
+.al-item{display:flex;gap:6px;font-size:11px;color:#EAB308;font-weight:500;padding:2px 0;align-items:flex-start}
+.al-item::before{content:'▲';font-size:9px;margin-top:1px;color:var(--amber)}
+
+.hourly{padding:10px 12px;overflow-x:auto;display:flex;gap:5px;border-bottom:1px solid var(--cloud2);flex-shrink:0;-webkit-overflow-scrolling:touch}
+.hs{min-width:42px;background:var(--cloud);border:1px solid var(--cloud2);border-radius:var(--r);padding:6px 4px;text-align:center;flex-shrink:0}
+.hs.now{background:var(--sky-pale);border-color:var(--sky)}
+.hs-t{font-family:var(--font-display);font-size:8px;font-weight:600;color:var(--mist)}
+.hs-i{font-size:14px;margin:2px 0;display:block}
+.hs-v{font-family:var(--font-display);font-size:11px;font-weight:700;color:var(--ink)}
+.hs-p{font-family:var(--font-display);font-size:8px;font-weight:700;color:#38bdf8;margin-top:1px}
+
+.summary{padding:12px 14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;flex-shrink:0}
+.sc{background:var(--cloud);border-radius:var(--r);padding:9px;text-align:center;border:1px solid var(--cloud2)}
+.sc-n{font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--sky)}
+.sc-l{font-size:9px;color:var(--mist);margin-top:2px;font-style:italic}
+
+/* ── Roadbook panel ── */
+.rbk{padding:12px 14px 16px;border-bottom:1px solid var(--cloud2);flex-shrink:0}
+.rbk-head{border-left:4px solid;padding-left:10px;margin-bottom:8px}
+.rbk-day{font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:1.5px;color:var(--mist);text-transform:uppercase}
+.rbk h3{font-family:var(--font-display);font-size:16px;font-weight:800;letter-spacing:-.3px;margin:2px 0}
+.rbk-sub{font-size:11px;color:var(--mist)}
+.rbk-desc{font-size:12px;line-height:1.55;color:#ccc;margin:8px 0}
+.rbk-note{font-size:11px;line-height:1.5;padding:7px 10px;border-radius:var(--r);background:#1a1500;border:1px solid #3d3000;color:#EAB308;margin:5px 0}
+.rbk h4{font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--mist);margin:14px 0 6px}
+.sch{display:grid;grid-template-columns:40px 1fr auto auto;gap:2px 8px;font-size:12px;padding:6px 0;border-bottom:1px solid var(--cloud2);align-items:center}
+.sch-t{font-family:var(--font-display);font-weight:700;color:var(--sky);font-size:12px}
+.sch-n{line-height:1.3;min-width:0}
+.sch-n span{display:block;color:var(--mist);font-size:10px}
+.sch-w{font-family:var(--font-display);font-size:11px;font-weight:700;white-space:nowrap}
+.sch a,.nav-a{color:var(--mist);text-decoration:none;font-size:15px;padding:4px;line-height:1}
+.rbk-item{font-size:12px;line-height:1.45;margin:6px 0}
+.rbk-item .lbl{font-family:var(--font-display);font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--mist);margin-right:4px}
+.rbk-item a{color:var(--sky);text-decoration:none;white-space:nowrap}
+.rbk-item small{display:block;color:var(--mist);font-size:11px}
+.rbk details{margin-top:12px;font-size:11px;color:#ccc}
+.rbk summary{font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--mist);cursor:pointer;padding:4px 0}
+.rbk details li{margin:4px 0 4px 14px;line-height:1.45}
+.rbk-src{margin-top:12px;font-size:10px;color:var(--mist);line-height:1.5}
+.rbk-src button{background:none;border:none;color:var(--sky);font-size:10px;cursor:pointer;text-decoration:underline;padding:0;font-family:inherit}
+
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:10px;color:var(--mist);padding:2rem;text-align:center}
+.empty-logo{font-family:var(--font-display);font-size:56px;font-weight:800;color:var(--cloud2);letter-spacing:-3px;line-height:1}
+.empty p{font-size:12px;line-height:1.7}
+
+.pop-name{font-family:var(--font-display);font-size:15px;font-weight:800;color:var(--ink);margin-bottom:3px}
+.pop-meta{font-size:11px;color:var(--mist);margin-bottom:8px}
+.pop-row{display:flex;gap:7px}
+.pop-stat{background:var(--cloud);border-radius:8px;padding:6px 8px;text-align:center;flex:1}
+.pop-val{font-family:var(--font-display);font-size:15px;font-weight:700}
+.pop-lbl{font-size:8px;color:var(--mist);text-transform:uppercase;letter-spacing:.8px;margin-top:1px}
+.pop-alert{margin-top:8px;font-size:11px;color:#EAB308;line-height:1.4}
+
+#recenter-btn{display:none;position:absolute;bottom:56px;right:12px;z-index:1000;width:44px;height:44px;border-radius:12px;background:rgba(17,17,17,.9);border:1.5px solid var(--sky);color:var(--sky);font-size:20px;cursor:pointer;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .2s}
+#recenter-btn:active{background:var(--sky);color:#111}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="wordmark">
+      <div class="wordmark-icon">
+        <svg viewBox="0 0 16 16"><path d="M2 10 C2 6 6 4 8 4 C10 4 14 6 14 10"/><path d="M5 10 C5 8 6.5 7 8 7"/><line x1="8" y1="13" x2="8" y2="10"/></svg>
+      </div>
+      STRATUS MAP
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="tagline">weather your route</div>
+      <button class="top-btn" id="mode-btn" onclick="toggleMode()" title="Roadbook de la N2">📖 Roadbook N2</button>
+      <button class="top-btn" id="gps-btn" onclick="toggleGps()" title="Activar GPS">📍 GPS</button>
+    </div>
+  </div>
+
+  <!-- Roadbook: etapas -->
+  <div class="stagebar" id="stagebar">
+    <div class="stage-chips" id="stage-chips"></div>
+    <label class="btn-gpx" id="gpx-btn" title="Cargar el GPX de la etapa">GPX<small>CARGAR</small><input type="file" accept=".gpx,application/gpx+xml,application/xml,text/xml" id="gpx-input" hidden></label>
+  </div>
+
+  <!-- Search -->
+  <div class="searchbar" id="searchbar">
+    <div id="waypoints-wrap" style="display:flex;flex-direction:column;gap:8px;flex:1;min-width:0">
+      <div class="wp-row" data-idx="0">
+        <div class="wp-handle">⬤</div>
+        <div class="sfield" style="flex:1">
+          <label>Origen</label>
+          <input class="wp-input" value="Málaga" placeholder="Ciudad de salida…">
+        </div>
+      </div>
+      <div class="wp-row" data-idx="1">
+        <div class="wp-handle">⬤</div>
+        <div class="sfield" style="flex:1">
+          <label>Destino</label>
+          <input class="wp-input" value="Madrid" placeholder="Ciudad de llegada…">
+        </div>
+        <button class="btn-remove" onclick="removeWp(this)" title="Eliminar parada">✕</button>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;align-self:flex-end">
+      <button class="btn-add" onclick="addWp()" title="Añadir parada">+ Parada</button>
+      <button class="btn-calc" id="btn" onclick="run()">Calcular ruta</button>
+    </div>
+  </div>
+
+  <!-- Status -->
+  <div class="statusbar"><div class="s-dot spin" id="sdot"></div><span id="smsg">Listo — introduce tu ruta y pulsa calcular</span></div>
+
+  <!-- Weather Band -->
+  <div id="wx-band"></div>
+
+  <!-- Body -->
+  <div class="body">
+    <div id="map" style="position:relative">
+      <div id="next-alert">⚠ <span id="next-alert-text"></span></div>
+      <button id="recenter-btn" onclick="recenter()" title="Centrar en mi posición">◎</button>
+    </div>
+    <div class="sidebar" id="sidebar">
+      <div class="empty">
+        <div class="empty-logo">S</div>
+        <p>Introduce origen y destino, o abre el<br><b>Roadbook N2</b> para ver cada etapa<br>con la previsión a la hora de paso.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script>
+/* ════════════════════════════════════════════════════════════════
+   ROADBOOK · La N2 entera, de Chaves a Faro · 18–23 oct 2026
+   t  = hora del roadbook (tal cual está escrita)
+   lo = huso del sitio (2 = España, 1 = Portugal; horario de verano)
+   o  = huso en el que está escrita la hora, si no coincide con lo
+   ════════════════════════════════════════════════════════════════ */
+const TRIP={
+  title:'La N2 entera · 18–23 oct 2026',
+  remind:[
+    'Portugal va 1 h por detrás: se gana el día 2 y se pierde el 6.',
+    'Repostar a los 180 km siempre, aunque quede depósito. Con nueve motos, 15–20 min por repostaje.',
+    'Efectivo: 100–150 € por cabeza. Tasca da Quinta y O Medronho no tienen datáfono.',
+    'Dos grupos con guía delante y escoba detrás. Flechado en cruces: el segundo señala hasta que pasa la escoba.',
+    'GPX cargados como track, no como ruta. Evitar autopistas los días 2, 3, 4 y 5.',
+    'Asistencia en carretera con cobertura en Portugal: verificadla.',
+    'Emergencias: 112 en España y en Portugal.'
+  ],
+  days:[
+  {n:1,date:'2026-10-18',label:'dom 18',from:'Alhaurín de la Torre',to:'Cáceres',km:434,sal:'07:45',lle:'16:45',
+   roads:'A-357 · Sierra Norte · A-66',color:'#f97316',avoid:false,lo:2,
+   desc:'Salida por El Chorro y Ardales, campiña por Osuna y subida a Extremadura por la Sierra Norte de Sevilla: Lora del Río, Constantina y Guadalcanal. Los últimos 170 km van por la Vía de la Plata.',
+   notes:[
+     'Hoy sois ocho: el noveno se incorpora directamente en Cáceres. Dadle el teléfono del guía y la hora prevista de llegada.',
+     'Se sale 17 min antes de amanecer (08:28). Corzos y jabalíes en la Sierra Norte: ritmo suave hasta que salga el sol.',
+     'OLIVAE no tiene garaje y está en casco histórico restringido: preguntad por las nueve motos en el Hotel Don Carlos.'
+   ],
+   stops:[
+     {n:'Alhaurín de la Torre',lat:36.6640,lon:-4.5610,t:'07:45',note:'Salida'},
+     {n:'Ardales',lat:36.8780,lon:-4.8470,t:'08:45',note:'Café · El Chorro y los pantanos'},
+     {n:'Campillos',lat:37.0480,lon:-4.8620,t:'09:15',note:'Repostaje'},
+     {n:'Osuna',lat:37.2370,lon:-5.1030,t:'09:50'},
+     {n:'Lora del Río',lat:37.6590,lon:-5.5270,t:'11:15',note:'El Guadalquivir'},
+     {n:'Constantina',lat:37.8700,lon:-5.6170,t:'12:00',note:'Sierra Norte'},
+     {n:'Guadalcanal',lat:38.0950,lon:-5.8180,t:'12:50',note:'La raya de Extremadura'},
+     {n:'Llerena',lat:38.2330,lon:-6.0160,t:'13:20',note:'Comida'},
+     {n:'Almendralejo',lat:38.6830,lon:-6.4070},
+     {n:'Mérida',lat:38.9160,lon:-6.3440,t:'15:30',note:'Teatro romano, 20 min de desvío'},
+     {n:'Cáceres',lat:39.4750,lon:-6.3720,t:'16:45',note:'Noche 1'}
+   ],
+   sleep:{n:'OLIVAE Hostal Boutique',q:'OLIVAE Hostal Boutique Cáceres',tel:'+34 927 22 55 27',note:'Reservado. Recepción en el Hotel Don Carlos, a 10 m.'},
+   eat:[
+     {k:'Comida',n:'El Bodegón',p:'Llerena',tel:'+34 666 99 69 77',note:'Cocina extremeña. El domingo abre.'},
+     {k:'Cena',n:'alBalat',p:'Cáceres',note:'Menú de tres platos con vino, 19 €.'}
+   ]},
+
+  {n:2,date:'2026-10-19',label:'lun 19',from:'Cáceres',to:'Chaves',km:434,sal:'07:15',lle:'15:45',
+   roads:'Alcántara · EN339 · Trás-os-Montes',color:'#dc2626',avoid:true,lo:1,
+   desc:'La etapa más variada. Portugal por el puente romano de Alcántara y la frontera de Segura, subida a la Torre (1.993 m) por Covilhã y bajada por Gouveia, Celorico y Trancoso hasta el Duero en Foz Côa. Final por Mirandela y Valpaços.',
+   notes:[
+     'Atrasad el reloj una hora en Segura. Desde Penamacor, hora portuguesa.',
+     'La Torre: 43 km por encima de 1.500 m, 5–10 °C y niebla posible. Si nieva cortan la EN339. Plan B: de Covilhã por Guarda hasta Celorico (+30 km).',
+     'Repostaje obligatorio en Covilhã: arriba no hay gasolineras. Hueco largo hasta Celorico.',
+     'Salida 58 min antes de amanecer (08:40). N-521 hasta Brozas: corzos y jabalíes.',
+     'Kantara Al Saif (Alcántara) cierra los lunes: café en el bar del Hotel Puente Romano.'
+   ],
+   stops:[
+     {n:'Cáceres',lat:39.4750,lon:-6.3720,t:'07:15',lo:2,note:'Salida, de noche'},
+     {n:'Brozas',lat:39.6130,lon:-6.7760,lo:2},
+     {n:'Alcántara',lat:39.7190,lon:-6.8840,t:'08:30',lo:2,note:'Café y puente romano'},
+     {n:'Segura',lat:39.8280,lon:-6.9800,t:'09:15',o:2,note:'Frontera · reloj −1 h'},
+     {n:'Penamacor',lat:40.1670,lon:-7.1710,t:'09:30'},
+     {n:'Covilhã',lat:40.2830,lon:-7.5000,t:'10:45',note:'Repostaje obligatorio'},
+     {n:'La Torre',lat:40.3217,lon:-7.6131,t:'11:45',note:'1.993 m · techo de Portugal'},
+     {n:'Gouveia',lat:40.4942,lon:-7.5914},
+     {n:'Celorico da Beira',lat:40.6364,lon:-7.3925,t:'13:00',note:'Comida'},
+     {n:'Trancoso',lat:40.7786,lon:-7.3486,t:'14:00'},
+     {n:'Vila Nova de Foz Côa',lat:41.0817,lon:-7.1414,t:'14:45',note:'El Duero'},
+     {n:'Mirandela',lat:41.4856,lon:-7.1817},
+     {n:'Valpaços',lat:41.6075,lon:-7.3111},
+     {n:'Chaves',lat:41.7400,lon:-7.4708,t:'15:45',note:'Noche 2 · marco del km 0'}
+   ],
+   sleep:{n:'Hotel Premium Chaves – Aquae Flaviae',q:'Hotel Premium Chaves Aquae Flaviae',tel:'+351 276 309 000',note:'Reservado. Aparcamiento exterior amplio y gratuito.'},
+   eat:[
+     {k:'Comida',n:'O Sítio',p:'Celorico da Beira',tel:'+351 933 840 710',note:'Lunes de 12:00 a 14:30.'},
+     {k:'Queso',n:'Casa do Queijo',p:'Celorico da Beira',tel:'+351 271 149 375',note:'Queijo Serra da Estrela para llevar.'},
+     {k:'Cena',n:'Pensão Flávia',p:'Chaves',tel:'+351 961 693 890',note:'Sin carta, decide el chef. La cocina cierra a las 21:00.'},
+     {k:'Plan B',n:'Biclaque Trajano',p:'Chaves',tel:'+351 276 096 190',note:'Más fino, hay que reservar.'}
+   ]},
+
+  {n:3,date:'2026-10-20',label:'mar 20',from:'Chaves',to:'Viseu',km:169,sal:'07:45',lle:'13:00',
+   roads:'N2 · km 0–172',color:'#8b5cf6',avoid:true,lo:1,
+   desc:'Arranca la N2 en el marco del km 0. Villas termales de Vidago y Pedras Salgadas, bajada al Duero por Vila Real y Peso da Régua y cruce de la Serra de Montemuro, el mejor tramo revirado de la carretera.',
+   notes:[
+     'Sale frío: 6–10 °C a primera hora en Trás-os-Montes. Contad con carretera mojada.',
+     'Hueco de gasolineras entre Vila Pouca de Aguiar y Vila Real.',
+     'El Bataclan de Vidago cierra los martes. Tasca da Quinta (Régua): solo efectivo.'
+   ],
+   stops:[
+     {n:'Chaves',lat:41.7378,lon:-7.4693,t:'07:45',note:'Foto en el marco del km 0'},
+     {n:'Vidago',lat:41.6342,lon:-7.5717},
+     {n:'Pedras Salgadas',lat:41.5408,lon:-7.6017,t:'08:20',note:'Villas termales'},
+     {n:'Vila Pouca de Aguiar',lat:41.4997,lon:-7.6436,t:'08:45',note:'Café'},
+     {n:'Vila Real',lat:41.3006,lon:-7.7441,t:'10:00',note:'Repostaje · Chaxoila'},
+     {n:'São Leonardo de Galafura',lat:41.2064,lon:-7.7275,t:'11:15',note:'Mirador del Duero'},
+     {n:'Peso da Régua',lat:41.1631,lon:-7.7869,t:'11:45'},
+     {n:'Lamego',lat:41.0975,lon:-7.8097,t:'12:15',note:'La escalinata'},
+     {n:'Castro Daire',lat:40.8986,lon:-7.9336,t:'12:15',note:'São Pedro do Sul a 12 km'},
+     {n:'Viseu',lat:40.6566,lon:-7.9125,t:'13:00',note:'Noche 3'}
+   ],
+   sleep:{n:'Hotel Grão Vasco',q:'Hotel Grão Vasco Viseu',tel:'+351 232 423 511',note:'Reservado. Aparcamiento propio gratuito.'},
+   eat:[
+     {k:'Comida',n:'Casa de Pasto Chaxoila',p:'Vila Real',tel:'+351 259 322 654',note:'Sobre la propia N2. El martes abre.'},
+     {k:'Cena',n:'Casa Arouquesa',p:'Viseu',note:'Carne arouquesa a la brasa.'},
+     {k:'Plan B',n:'Restaurante Porta',p:'Viseu',tel:'+351 963 754 021',note:'Junto a la catedral. Arroz de polvo por encargo.'}
+   ]},
+
+  {n:4,date:'2026-10-21',label:'mié 21',from:'Viseu',to:'Abrantes',km:204,sal:'07:30',lle:'13:45',
+   roads:'N2 · km 172–400',color:'#3b82f6',avoid:true,lo:1,
+   desc:'El día con más curvas por kilómetro. Penacova sobre el Mondego y el tramo de Góis y Pedrógão Grande entre pinares, el más revirado de los 738 km. Final por el valle del Tajo.',
+   notes:[
+     'Hueco de gasolineras entre Lousã y Pedrógão Grande: repostad en Penacova.',
+     'La Tasquinha da Vila (Vila de Rei) cierra los miércoles. Recambio: A Toca do Coelho, menú de 10 €, solo efectivo.',
+     'Cierran también hoy Sabores do Pinhal (Sertã) y Chef Victor Felisberto (Abrantes).'
+   ],
+   stops:[
+     {n:'Viseu',lat:40.6566,lon:-7.9125,t:'07:30',note:'Salida'},
+     {n:'Tondela',lat:40.5172,lon:-8.0800},
+     {n:'Santa Comba Dão',lat:40.3989,lon:-8.1314},
+     {n:'Penacova',lat:40.2700,lon:-8.2817,t:'09:30',note:'Café y repostaje'},
+     {n:'Vila Nova de Poiares',lat:40.2106,lon:-8.2581},
+     {n:'Góis',lat:40.1556,lon:-8.1111,t:'11:00',note:'Puente medieval'},
+     {n:'Pedrógão Grande',lat:39.9172,lon:-8.1453,t:'12:45'},
+     {n:'Sertã',lat:39.8008,lon:-8.1006,t:'13:15',note:'Comida'},
+     {n:'Vila de Rei',lat:39.6758,lon:-8.1447,t:'14:00',note:'Centro geodésico, a 3 km'},
+     {n:'Abrantes',lat:39.4636,lon:-8.1975,t:'13:45',note:'Noche 4'}
+   ],
+   sleep:{n:'Luna Hotel Turismo',q:'Luna Hotel Turismo Abrantes',tel:'+351 241 247 110',note:'Reservado. Aparcamiento amplio.'},
+   eat:[
+     {k:'Comida',n:'Ponte Velha',p:'Sertã',tel:'+351 274 600 160',note:'Raciones descomunales. El miércoles abre.'},
+     {k:'Recambio',n:'A Toca do Coelho',p:'Vila de Rei',tel:'+351 274 898 681',note:'Menú de 10 €. Solo efectivo.'},
+     {k:'Cena',n:'O Ramiro',p:'Abrantes',tel:'+351 241 881 263',note:'Cocina ribatejana. El miércoles abre.'}
+   ]},
+
+  {n:5,date:'2026-10-22',label:'jue 22',from:'Abrantes',to:'Faro',km:335,sal:'07:00',lle:'16:30',
+   roads:'N2 · km 400–738,5',color:'#14b8a6',avoid:true,lo:1,
+   desc:'Alentejo de rectas onduladas por Mora y Montemor-o-Novo, trigo y alcornoques hasta Castro Verde, y remate por la Serra do Caldeirão —55 km de Estrada Património— hasta el marco del km 738.',
+   notes:[
+     'El hueco de gasolineras más largo del viaje: 90 km entre Ferreira do Alentejo y Almodôvar. Repostad en Mora y en Castro Verde, sin excepciones.',
+     'Salida 23 min antes de amanecer (07:50). Fauna en el Alentejo.',
+     'Hotel sin aparcamiento: Parque Saba da Pontinha, a 750 m, 24 h. +351 289 824 442.',
+     'Mariscada en LODO, a 237 m del hotel: esa noche nadie conduce.'
+   ],
+   stops:[
+     {n:'Abrantes',lat:39.4636,lon:-8.1975,t:'07:00',note:'Salida'},
+     {n:'Ponte de Sor',lat:39.2483,lon:-8.0106,t:'08:15',note:'Café'},
+     {n:'Montargil',lat:39.0781,lon:-8.1717},
+     {n:'Mora',lat:38.9433,lon:-8.1653,t:'09:30',note:'Repostaje'},
+     {n:'Ciborro',lat:38.7953,lon:-8.2267,t:'10:15',note:'Marco del km 370'},
+     {n:'Montemor-o-Novo',lat:38.6486,lon:-8.2147,t:'10:45'},
+     {n:'Torrão',lat:38.2950,lon:-8.2228,t:'12:00',note:'Embalse de Vale do Gaio'},
+     {n:'Ferreira do Alentejo',lat:38.0569,lon:-8.1167},
+     {n:'Aljustrel',lat:37.8775,lon:-8.1650},
+     {n:'Castro Verde',lat:37.6981,lon:-8.0858,t:'14:00',note:'Comida y repostaje obligatorio'},
+     {n:'Almodôvar',lat:37.5111,lon:-8.0597,t:'14:45',note:'Empieza el Caldeirão'},
+     {n:'Barranco do Velho',lat:37.2369,lon:-7.9369},
+     {n:'São Brás de Alportel',lat:37.1517,lon:-7.8883,t:'16:45'},
+     {n:'Faro',lat:37.0270,lon:-7.9290,t:'16:30',note:'Noche 5 · marco del km 738'}
+   ],
+   sleep:{n:'Hotel Sol Algarve by Kavia',q:'Hotel Sol Algarve Faro',tel:'+351 289 895 700',note:'Reservado. Sin garaje: Parque Saba da Pontinha, a 750 m.'},
+   eat:[
+     {k:'Café',n:'O Alentejano',p:'Mora',tel:'+351 266 103 265',note:'El jueves abre.'},
+     {k:'Comida',n:'Casa do Alentejo',p:'Castro Verde',tel:'+351 286 327 132',note:'Migas con porco preto. El jueves abre.'},
+     {k:'Cena',n:'LODO Marisqueira',p:'Faro',tel:'+351 968 623 355',note:'Reservado. Percebes y ostras de la Ria Formosa.'},
+     {k:'Plan B',n:'O Chalavar',p:'Faro',tel:'+351 289 825 199',note:'Más barato, a 174 m del hotel.'}
+   ]},
+
+  {n:6,date:'2026-10-23',label:'vie 23',from:'Faro',to:'Alhaurín de la Torre',km:430,sal:'08:00',lle:'16:30',
+   roads:'N-125 · N-431 · A-49 · N-334',color:'#a3a3a3',avoid:false,lo:2,o:1,
+   desc:'Nacional pura hasta Huelva —N-125 hasta la frontera y N-431 entre pinares y marismas—, despedida del compañero en Sevilla y bajada por Osuna y Campillos.',
+   notes:[
+     'El compañero de Sevilla termina aquí su viaje: 207 km.',
+     'Adelantad el reloj una hora al cruzar el Guadiana.',
+     'Salid de Faro con el depósito lleno.'
+   ],
+   stops:[
+     {n:'Faro',lat:37.0194,lon:-7.9322,t:'08:00',lo:1,note:'Salida por la N-125'},
+     {n:'Tavira',lat:37.1272,lon:-7.6486,lo:1},
+     {n:'Ayamonte',lat:37.2133,lon:-7.4067,t:'09:15',note:'Café tras el puente'},
+     {n:'Huelva',lat:37.2614,lon:-6.9447,t:'10:15',note:'Repostaje'},
+     {n:'Sevilla',lat:37.3891,lon:-5.9845,t:'11:45',note:'Despedida'},
+     {n:'Osuna',lat:37.2370,lon:-5.1030,t:'13:30',note:'Comida'},
+     {n:'Campillos',lat:37.0480,lon:-4.8620},
+     {n:'Alhaurín de la Torre',lat:36.6640,lon:-4.5610,t:'16:30',note:'Llegada'}
+   ],
+   sleep:null,
+   eat:[
+     {k:'Comida',n:'Casa Curro',p:'Osuna',tel:'+34 955 82 07 58'},
+     {k:'Alternativa',n:'Freiduría Rocío',p:'Ayamonte',tel:'+34 602 55 91 44',note:'Despedida con marisco; llegada a Málaga sobre las 19:00.'}
+   ]}
+  ]
+};
+
+/* ════════════════ Tiempo: códigos WMO ════════════════ */
+const WMO={0:{i:'☀️',d:'Despejado'},1:{i:'🌤️',d:'Mayormente despejado'},2:{i:'⛅',d:'Parcialmente nublado'},3:{i:'☁️',d:'Nublado'},45:{i:'🌫️',d:'Niebla',a:'Niebla densa — reduce velocidad'},48:{i:'🌫️',d:'Niebla/escarcha',a:'Niebla con hielo en calzada'},51:{i:'🌦️',d:'Llovizna ligera'},53:{i:'🌦️',d:'Llovizna moderada'},55:{i:'🌧️',d:'Llovizna intensa'},61:{i:'🌧️',d:'Lluvia ligera'},63:{i:'🌧️',d:'Lluvia moderada',a:'Lluvia — precaución en carretera'},65:{i:'🌧️',d:'Lluvia intensa',a:'Lluvia intensa — reduce velocidad'},71:{i:'🌨️',d:'Nevada ligera'},73:{i:'❄️',d:'Nevada moderada',a:'Nevada — posible hielo'},75:{i:'❄️',d:'Nevada intensa',a:'Nevada intensa — peligro'},80:{i:'🌦️',d:'Chubascos ligeros'},81:{i:'🌧️',d:'Chubascos moderados',a:'Chubascos — precaución'},82:{i:'⛈️',d:'Chubascos fuertes',a:'Chubascos fuertes — peligro'},95:{i:'⛈️',d:'Tormenta',a:'Tormenta eléctrica — peligro'},99:{i:'⛈️',d:'Tormenta/granizo',a:'Granizo — peligro extremo'}};
+const wmo=c=>WMO[c]||WMO[Math.floor(c/10)*10]||{i:'🌡️',d:'Variable'};
+
+let map=null,cluster=null,stops=[],mkrs=[],mode='free',curDay=null,isForecast=false,selIdx=0;
+const gpxCache={};
+
+const st=(msg,s='spin')=>{document.getElementById('sdot').className='s-dot '+s;document.getElementById('smsg').textContent=msg};
+const pad=n=>String(n).padStart(2,'0');
+const localOff=()=>-new Date().getTimezoneOffset()/60;
+const val=(a,i,d)=>(a&&a[i]!=null)?a[i]:d;
+function toMs(date,t,off){const[y,m,d]=date.split('-').map(Number);const[h,mi]=t.split(':').map(Number);return Date.UTC(y,m-1,d,h-off,mi);}
+function fmtT(ms,off){const d=new Date(ms+off*36e5);return pad(d.getUTCHours())+':'+pad(d.getUTCMinutes());}
+const telHref=t=>'tel:'+t.replace(/\s/g,'');
+const navUrl=(lat,lon)=>`https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}&travelmode=driving`;
+const searchUrl=q=>`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
+function todayStr(){const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;}
+function todayStage(){const t=todayStr();const d=TRIP.days.find(x=>x.date===t);return d?d.n:null;}
+function saveState(){try{localStorage.setItem('stratus-state',JSON.stringify({mode,day:curDay?curDay.n:null}));}catch(e){}}
+
+/* ════════════════ Geometría ════════════════ */
+function hav(a,b){const r=Math.PI/180,dLa=(b[1]-a[1])*r,dLo=(b[0]-a[0])*r;const x=Math.sin(dLa/2)**2+Math.cos(a[1]*r)*Math.cos(b[1]*r)*Math.sin(dLo/2)**2;return 12742*Math.asin(Math.sqrt(x));}
+function cumDist(c){const o=[0];for(let i=1;i<c.length;i++)o.push(o[i-1]+hav(c[i-1],c[i]));return o;}
+// Proyecta las paradas sobre el trazado, en orden
+function projectStops(coords,cum,wps){
+  let from=0;
+  return wps.map(p=>{
+    let bi=from,bd=Infinity;const q=[p.lon,p.lat];
+    for(let i=from;i<coords.length;i++){const d=hav(coords[i],q);if(d<bd){bd=d;bi=i;}}
+    from=bi;return{idx:bi,km:cum[bi],off:bd};
+  });
+}
+// Puntos de consulta: las paradas del roadbook + relleno cada ~15–20 km (máx. 25)
+function samplePoints(coords,cum,proj,wps){
+  const total=cum[cum.length-1];
+  const fixed=proj.map((p,k)=>({i:k===0?0:p.idx,name:wps[k].n,stop:k}));
+  let step=Math.max(15,total/22),out=[];
+  for(let g=0;g<12;g++){
+    out=[];
+    for(let k=0;k<fixed.length;k++){
+      const a=fixed[k];
+      if(out.length&&out[out.length-1].i===a.i)continue;
+      out.push(a);
+      const b=fixed[k+1];if(!b)break;
+      const gap=cum[b.i]-cum[a.i],n=Math.ceil(gap/step)-1;
+      for(let j=1;j<=n;j++){const target=cum[a.i]+gap*j/(n+1);let i=a.i;while(i<b.i&&cum[i]<target)i++;out.push({i,name:null});}
+    }
+    if(out.length<=25)break;step*=1.25;
+  }
+  return out.map(o=>({lon:coords[o.i][0],lat:coords[o.i][1],km:cum[o.i],name:o.name,stop:o.stop}));
+}
+// Anclas horarias: solo las que avanzan en km y en hora (descarta horas incoherentes del roadbook)
+function buildAnchors(day,wps,proj){
+  const timed=wps.map((w,i)=>w.t?{km:proj[i].km,ms:toMs(day.date,w.t,w.o)}:null).filter(Boolean);
+  if(timed.length<2)return timed;
+  const last=timed[timed.length-1],out=[timed[0]];
+  for(let i=1;i<timed.length-1;i++){const a=timed[i],p=out[out.length-1];if(a.ms>p.ms&&a.ms<last.ms&&a.km>p.km&&a.km<last.km)out.push(a);}
+  out.push(last);return out;
+}
+function etaAt(km,A){
+  if(!A.length)return null;
+  if(km<=A[0].km)return A[0].ms;
+  for(let i=1;i<A.length;i++){if(km<=A[i].km){const a=A[i-1],b=A[i],f=b.km>a.km?(km-a.km)/(b.km-a.km):0;return a.ms+f*(b.ms-a.ms);}}
+  return A[A.length-1].ms;
+}
+
+/* ════════════════ Servicios ════════════════ */
+async function geo(q){
+  const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1`,{headers:{'Accept-Language':'es'}});
+  const d=await r.json();if(!d.length)throw new Error(`No encontré: "${q}"`);
+  return{name:d[0].display_name.split(',')[0],lat:+d[0].lat,lon:+d[0].lon};
+}
+async function osrm(pts,avoid){
+  const cs=pts.map(p=>`${p.lon.toFixed(5)},${p.lat.toFixed(5)}`).join(';');
+  const base=`https://router.project-osrm.org/route/v1/driving/${cs}?overview=full&geometries=geojson`;
+  let rd=null;
+  if(avoid){try{const r=await fetch(base+'&exclude=motorway');rd=await r.json();if(rd.code!=='Ok')rd=null;}catch(e){rd=null;}}
+  if(!rd){const r=await fetch(base);rd=await r.json();}
+  if(rd.code!=='Ok')throw new Error('No se pudo calcular la ruta');
+  return{coords:rd.routes[0].geometry.coordinates,duration:rd.routes[0].duration};
+}
+const HV='temperature_2m,weathercode,windspeed_10m,winddirection_10m,windgusts_10m,relativehumidity_2m,visibility,precipitation_probability,precipitation';
+const CV='temperature_2m,weathercode,windspeed_10m,winddirection_10m,windgusts_10m,relativehumidity_2m,visibility,precipitation';
+async function fetchWx(pts,date){
+  const la=pts.map(p=>p.lat.toFixed(4)).join(','),lo=pts.map(p=>p.lon.toFixed(4)).join(',');
+  let url=`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&hourly=${HV}&daily=sunrise,sunset&timezone=GMT`;
+  url+=date?`&start_date=${date}&end_date=${date}`:`&current=${CV}&forecast_days=1`;
+  const r=await fetch(url);const d=await r.json();
+  if(!r.ok||d.error)throw new Error(d.reason||'Open-Meteo no respondió');
+  return Array.isArray(d)?d:[d];
+}
+function hourIdx(times,ms){let b=0,bd=Infinity;times.forEach((s,i)=>{const d=Math.abs(Date.parse(s+':00Z')-ms);if(d<bd){bd=d;b=i;}});return b;}
+
+/* ════════════════ Construcción de cada punto ════════════════ */
+function makeAlert(s){
+  const w=wmo(s.wcode),o=[];
+  if(w.a)o.push(w.a);
+  if(s.temp<=2)o.push(`${s.temp} °C — posible hielo en calzada`);
+  if(s.gusts>=75)o.push(`Ráfagas muy fuertes de ${s.gusts} km/h — peligro`);
+  else if(s.gusts>=50)o.push(`Ráfagas de ${s.gusts} km/h — precaución`);
+  else if(s.wind>=50)o.push(`Viento fuerte de ${s.wind} km/h — precaución`);
+  if(!w.a&&s.pp!=null&&s.pp>=70)o.push(`${s.pp}% de probabilidad de lluvia`);
+  if(s.vis<1)o.push('Visibilidad por debajo de 1 km');
+  return o.length?o.join(' · '):null;
+}
+function buildStop(p,w,fc,anchors,lo){
+  const s={name:p.name||`km ${Math.round(p.km)}`,named:p.name!=null,lat:p.lat,lon:p.lon,km:Math.round(p.km),lo,eta:null};
+  const h=w.hourly||{};
+  if(fc){
+    const eta=etaAt(p.km,anchors);s.eta=eta!=null?Math.round(eta/3e5)*3e5:null;
+    const i=hourIdx(h.time,s.eta??Date.now());s.hi=i;
+    Object.assign(s,{temp:Math.round(val(h.temperature_2m,i,0)),wind:Math.round(val(h.windspeed_10m,i,0)),winddir:Math.round(val(h.winddirection_10m,i,0)),
+      gusts:Math.round(val(h.windgusts_10m,i,val(h.windspeed_10m,i,0))),humid:val(h.relativehumidity_2m,i,0),vis:Math.round(val(h.visibility,i,30000)/1000),
+      pp:val(h.precipitation_probability,i,null),prec:val(h.precipitation,i,0),wcode:val(h.weathercode,i,0)});
+  }else{
+    const c=w.current||{};s.hi=h.time?hourIdx(h.time,Date.now()):0;
+    Object.assign(s,{temp:Math.round(c.temperature_2m??0),wind:Math.round(c.windspeed_10m??0),winddir:Math.round(c.winddirection_10m||0),
+      gusts:Math.round(c.windgusts_10m??c.windspeed_10m??0),humid:c.relativehumidity_2m??0,vis:Math.round((c.visibility??30000)/1000),
+      pp:val(h.precipitation_probability,s.hi,null),prec:c.precipitation??0,wcode:c.weathercode??0});
+  }
+  const info=wmo(s.wcode);s.icon=info.i;s.desc=info.d;s.hourly=h;
+  if(w.daily&&w.daily.sunrise&&s.eta){const sr=Date.parse(w.daily.sunrise[0]+':00Z'),ss=Date.parse(w.daily.sunset[0]+':00Z');s.night=s.eta<sr||s.eta>ss;}
+  s.alert=makeAlert(s);
+  return s;
+}
+
+/* ════════════════ Waypoint UI (ruta libre) ════════════════ */
+function getWpValues(){return [...document.querySelectorAll('.wp-input')].map(i=>i.value.trim()).filter(Boolean);}
+function updateWpLabels(){
+  const rows=document.querySelectorAll('.wp-row');
+  rows.forEach((row,i)=>{
+    const label=row.querySelector('label'),handle=row.querySelector('.wp-handle');
+    if(i===0){label.textContent='Origen';handle.style.color='var(--green)';}
+    else if(i===rows.length-1){label.textContent='Destino';handle.style.color='var(--storm)';}
+    else{label.innerHTML=`Parada ${i}<span class="wp-opt-tag">Vía</span>`;handle.style.color='var(--sky)';}
+    const btn=row.querySelector('.btn-remove');if(btn)btn.style.display=(rows.length>2)?'':'none';
+  });
+}
+function addWp(){
+  const wrap=document.getElementById('waypoints-wrap'),rows=wrap.querySelectorAll('.wp-row'),lastRow=rows[rows.length-1];
+  const nr=document.createElement('div');nr.className='wp-row';
+  nr.innerHTML=`<div class="wp-handle">⬤</div><div class="sfield" style="flex:1"><label></label><input class="wp-input" placeholder="Ciudad intermedia…"></div><button class="btn-remove" onclick="removeWp(this)" title="Eliminar">✕</button>`;
+  wrap.insertBefore(nr,lastRow);updateWpLabels();nr.querySelector('input').focus();
+}
+function removeWp(btn){
+  const wrap=document.getElementById('waypoints-wrap');
+  if(wrap.querySelectorAll('.wp-row').length<=2)return;
+  btn.closest('.wp-row').remove();updateWpLabels();
+}
+function optimiseOrder(pts){
+  if(pts.length<=2)return pts;
+  const dist=(a,b)=>Math.hypot(a.lat-b.lat,a.lon-b.lon);
+  const origin=pts[0],dest=pts[pts.length-1],middle=[...pts.slice(1,-1)],ordered=[];let cur=origin;
+  while(middle.length){let bi=0,bd=Infinity;middle.forEach((p,i)=>{const d=dist(cur,p);if(d<bd){bd=d;bi=i;}});const nx=middle.splice(bi,1)[0];ordered.push(nx);cur=nx;}
+  return[origin,...ordered,dest];
+}
+
+/* ════════════════ Viento ════════════════ */
+function beaufort(k){
+  if(k<1)return{n:0,label:'Calma'};if(k<6)return{n:1,label:'Ventolina'};if(k<12)return{n:2,label:'Flojito'};if(k<20)return{n:3,label:'Flojo'};
+  if(k<29)return{n:4,label:'Bonancible'};if(k<39)return{n:5,label:'Fresquito'};if(k<50)return{n:6,label:'Fresco'};if(k<62)return{n:7,label:'Fuerte'};
+  if(k<75)return{n:8,label:'Muy fuerte'};if(k<89)return{n:9,label:'Temporal'};if(k<103)return{n:10,label:'Borrasca'};if(k<118)return{n:11,label:'Borrasca fuerte'};
+  return{n:12,label:'Huracán'};
+}
+function windArrow(deg){const a=['↓','↙','←','↖','↑','↗','→','↘'];return a[Math.round(((deg+180)%360)/45)%8];}
+function windColor(k){if(k>=75)return'#f87171';if(k>=50)return'#fb923c';if(k>=29)return'#fbbf24';return'#60a5fa';}
+const DIRS=['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSO','SO','OSO','O','ONO','NO','NNO'];
+function windPill(w){
+  if(w>60)return`<span class="pill pill-wind danger">💨 ${w} km/h</span>`;
+  if(w>35)return`<span class="pill pill-wind warn">💨 ${w} km/h</span>`;
+  return`<span class="pill pill-wind">💨 ${w} km/h</span>`;
+}
+function condPill(code){
+  if([95,99,82].includes(code))return`<span class="pill pill-storm">⛈ Tormenta</span>`;
+  if([65,63,61,55,53,51,80,81].includes(code))return`<span class="pill pill-rain">🌧 Lluvia</span>`;
+  if([75,73,71].includes(code))return`<span class="pill pill-snow">❄ Nieve</span>`;
+  if([45,48].includes(code))return`<span class="pill pill-fog">🌫 Niebla</span>`;
+  if([0,1].includes(code))return`<span class="pill pill-sun">☀ Despejado</span>`;
+  return'';
+}
+const ppPill=s=>(s.pp!=null&&s.pp>=40&&![61,63,65,80,81,82,95,99].includes(s.wcode))?`<span class="pill pill-rain">💧 ${s.pp}%</span>`:'';
+const nightPill=s=>s.night?`<span class="pill pill-night">🌙 De noche</span>`:'';
+const etaTxt=s=>s.eta?fmtT(s.eta,s.lo):'';
+
+/* ════════════════ Mapa ════════════════ */
+function drawRoute(coords,wps,color,day){
+  if(map){map.remove();map=null;}
+  gpsMarker=null;cluster=null;
+  map=L.map('map',{zoomControl:true,attributionControl:false});
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
+  const poly=L.polyline(coords.map(c=>[c[1],c[0]]),{color,weight:day?5:4,opacity:.9,dashArray:day?null:'8 5'}).addTo(map);
+  map.invalidateSize();map.fitBounds(poly.getBounds(),{padding:[40,40]});
+  setTimeout(()=>{if(map){map.invalidateSize();map.fitBounds(poly.getBounds(),{padding:[40,40]});}},400);
+  wps.forEach((p,i)=>{
+    const isO=i===0,isD=i===wps.length-1;
+    const tip=`<b>${p.t?p.t+' · ':''}${p.n}</b>${p.note?'<br>'+p.note:''}`;
+    if(day&&!isO&&!isD){
+      L.circleMarker([p.lat,p.lon],{radius:6,color:'#fff',weight:2,fillColor:color,fillOpacity:1}).addTo(map).bindTooltip(tip,{direction:'top'});
+    }else{
+      const cls=isO?'o':isD?'d':'w',emoji=isO?'🟢':isD?(day&&day.sleep?'🛏️':'🔴'):'📍';
+      L.marker([p.lat,p.lon],{icon:L.divIcon({className:'',html:`<div class="sm ${cls}" style="font-size:20px">${emoji}</div>`,iconSize:[44,44],iconAnchor:[22,22]})}).addTo(map).bindTooltip(tip,{direction:'top'});
+    }
+  });
+  return poly;
+}
+function mkPop(s){
+  const b=beaufort(s.wind),arr=windArrow(s.winddir),wcol=windColor(s.wind),dl=DIRS[Math.round(s.winddir/22.5)%16];
+  const when=s.eta?`Paso previsto ≈ ${etaTxt(s)} · `:'';
+  return`<div style="min-width:200px">
+    <div class="pop-name">${s.icon} ${s.name}</div>
+    <div class="pop-meta">${when}${s.desc} · km ${s.km}</div>
+    <div class="pop-row">
+      <div class="pop-stat"><div class="pop-val">${s.temp}°</div><div class="pop-lbl">Temp</div></div>
+      <div class="pop-stat"><div class="pop-val">${s.pp!=null?s.pp+'%':'—'}</div><div class="pop-lbl">Lluvia</div></div>
+      <div class="pop-stat"><div class="pop-val">${s.vis}</div><div class="pop-lbl">Visib km</div></div>
+    </div>
+    <div style="margin-top:8px;background:var(--cloud);border-radius:8px;padding:8px 10px;border:1px solid var(--cloud2)">
+      <div style="font-family:Syne,sans-serif;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--mist);margin-bottom:5px">Viento</div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span style="font-size:24px;line-height:1;display:inline-block;transform:rotate(${s.winddir}deg)">${arr}</span>
+        <div>
+          <div style="font-family:Syne,sans-serif;font-size:18px;font-weight:800;color:${wcol}">${s.wind} <span style="font-size:11px;font-weight:400">km/h</span></div>
+          <div style="font-size:10px;color:var(--mist)">${dl} · Bft ${b.n} · ${b.label}</div>
+        </div>
+        <div style="margin-left:auto;text-align:right">
+          <div style="font-family:Syne,sans-serif;font-size:14px;font-weight:700;color:#fb923c">${s.gusts} <span style="font-size:10px;font-weight:400;color:var(--mist)">km/h</span></div>
+          <div style="font-size:9px;color:var(--mist)">Ráfagas</div>
+        </div>
+      </div>
+    </div>
+    ${s.alert?`<div class="pop-alert">▲ ${s.alert}</div>`:''}
+  </div>`;
+}
+function addWxMarkers(){
+  cluster=L.markerClusterGroup({maxClusterRadius:40,spiderfyOnMaxZoom:true,showCoverageOnHover:false,
+    iconCreateFunction:c=>L.divIcon({html:`<div style="background:rgba(234,179,8,.8);color:#111;font-family:Syne,sans-serif;font-weight:800;font-size:12px;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #EAB308;box-shadow:0 2px 8px rgba(0,0,0,.4)">${c.getChildCount()}</div>`,className:'',iconSize:[32,32]})});
+  mkrs=stops.map((s,i)=>{
+    const arr=windArrow(s.winddir),wcol=windColor(s.wind);
+    const alertBg=s.alert?'background:rgba(239,68,68,.85);':'background:rgba(0,0,0,.7);';
+    const html=`<div class="wx-pin"><div class="wx-pin-ico">${s.icon}</div><div class="wx-pin-temp" style="${alertBg}">${s.temp}°</div><div class="wx-pin-wind" style="color:${wcol}"><span style="display:inline-block;transform:rotate(${s.winddir}deg);line-height:1">${arr}</span> ${s.wind}</div></div>`;
+    const m=L.marker([s.lat,s.lon],{icon:L.divIcon({className:'',html,iconSize:[36,44],iconAnchor:[18,44],popupAnchor:[0,-46]})});
+    m.bindPopup(mkPop(s),{maxWidth:240});m.on('click',()=>sel(i,true));
+    cluster.addLayer(m);return m;
+  });
+  map.addLayer(cluster);
+}
+
+/* ════════════════ Render del panel ════════════════ */
+function renderWxBand(){
+  const band=document.getElementById('wx-band');
+  band.innerHTML=stops.map((s,i)=>`
+    <div class="wx-node${i===selIdx?' active':''}${s.named?' named':''}" id="wxn${i}" onclick="sel(${i})">
+      ${s.alert?'<div class="wx-alert-dot"></div>':''}
+      <div class="wx-node-label">${(i===0||i===stops.length-1)?'⬤ ':''}${s.name}</div>
+      ${s.eta?`<div class="wx-node-eta">≈ ${etaTxt(s)}</div>`:''}
+      <div class="wx-node-icon">${s.icon}</div>
+      <div class="wx-node-temp">${s.temp}°C</div>
+      <div class="wx-node-pills">${windPill(s.wind)}${condPill(s.wcode||0)}${ppPill(s)}${nightPill(s)}</div>
+      <div style="font-family:var(--font-display);font-size:9px;color:var(--mist);margin-top:4px">${s.km} km</div>
+    </div>`).join('');
+  band.classList.add('visible');
+}
+function renderSidebar(){
+  const al=stops.filter(s=>s.alert);
+  const tMin=Math.min(...stops.map(s=>s.temp)),tMax=Math.max(...stops.map(s=>s.temp));
+  const maxG=Math.max(...stops.map(s=>s.gusts));
+  const rb=`<div class="rb-strip">`+stops.map((s,i)=>`
+    <div class="rb-card${i===selIdx?' on':''}${s.alert?' warn':''}" id="rb${i}" onclick="sel(${i})">
+      ${s.alert?'<div class="rb-aldot"></div>':''}
+      <div class="rb-km">${s.km}km</div>
+      ${s.eta?`<div class="rb-eta">${etaTxt(s)}</div>`:''}
+      <span class="rb-ico">${s.icon}</span>
+      <div class="rb-tmp">${s.temp}°</div>
+      <div class="rb-city">${s.name}</div>
+    </div>`).join('')+`</div>`;
+  const alHtml=al.length?`<div class="alerts-panel">`+al.map(a=>`<div class="al-item"><span><strong>${a.name}${a.eta?' ('+etaTxt(a)+')':''}:</strong> ${a.alert}</span></div>`).join('')+`</div>`:'';
+  const sc=`<div class="summary">
+    <div class="sc"><div class="sc-n">${tMin}–${tMax}°</div><div class="sc-l">Temperatura</div></div>
+    <div class="sc"><div class="sc-n">${maxG}</div><div class="sc-l">Ráfaga máx.</div></div>
+    <div class="sc"><div class="sc-n">${al.length||'✓'}</div><div class="sc-l">${al.length?'Avisos':'Sin avisos'}</div></div>
+  </div>`;
+  document.getElementById('sidebar').innerHTML=rb+alHtml+'<div id="tele-area"></div><div id="hr-area"></div>'+sc+'<div id="rbk-area"></div>';
+  renderTele(selIdx);
+  if(curDay&&mode==='rb')renderRoadbook(curDay);
+}
+function renderTele(i){
+  const s=stops[i];if(!s)return;
+  const b=beaufort(s.wind),arr=windArrow(s.winddir),wcol=windColor(s.wind),dl=DIRS[Math.round(s.winddir/22.5)%16];
+  const vc=s.vis<5?'red':s.vis<15?'amb':'';
+  const pc=s.pp!=null&&s.pp>=70?'red':s.pp!=null&&s.pp>=40?'amb':'';
+  const when=s.eta?`<div class="tele-when">Paso previsto ≈ ${etaTxt(s)}${s.lo===1?' (hora PT)':''} · ${curDay?curDay.label:''}${s.night?' · aún de noche':''}</div>`:(isForecast?'':`<div class="tele-when">Ahora mismo</div>`);
+  document.getElementById('tele-area').innerHTML=`
+  <div class="tele">
+    <div class="tele-head"><span class="tele-city">${s.name}</span><span class="tele-meta">km ${s.km}</span></div>
+    ${when}
+    <div style="display:flex;align-items:baseline;gap:4px"><span class="tele-temp">${s.temp}°</span><span style="font-size:18px">${s.icon}</span></div>
+    <div class="tele-desc">${s.desc}</div>
+    <div class="tele-grid">
+      <div class="tc" style="grid-column:1/-1">
+        <div class="tc-l">Viento</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:2px">
+          <span style="font-size:28px;display:inline-block;transform:rotate(${s.winddir}deg);line-height:1">${arr}</span>
+          <div>
+            <div style="font-family:var(--font-display);font-size:22px;font-weight:800;color:${wcol}">${s.wind}<span style="font-size:11px;font-weight:400;color:var(--mist)"> km/h</span></div>
+            <div style="font-size:10px;color:var(--mist)">${dl} · Beaufort ${b.n} · ${b.label}</div>
+          </div>
+          <div style="margin-left:auto;text-align:right">
+            <div style="font-family:var(--font-display);font-size:16px;font-weight:700;color:#fb923c">${s.gusts}<span style="font-size:10px;font-weight:400;color:var(--mist)"> km/h</span></div>
+            <div style="font-size:10px;color:var(--mist)">Ráfagas máx.</div>
+          </div>
+        </div>
+      </div>
+      <div class="tc"><div class="tc-l">Lluvia</div><div class="tc-v ${pc}">${s.pp!=null?s.pp:'—'}<span class="tc-u"> %</span></div></div>
+      <div class="tc"><div class="tc-l">Humedad</div><div class="tc-v">${s.humid}<span class="tc-u"> %</span></div></div>
+      <div class="tc"><div class="tc-l">Visib.</div><div class="tc-v ${vc}">${s.vis}<span class="tc-u"> km</span></div></div>
+    </div>
+    ${s.alert?`<div class="tele-alert">▲ ${s.alert}</div>`:''}
+  </div>`;
+  renderHourly(s);
+}
+function renderHourly(s){
+  const h=s.hourly;if(!h||!h.time)return;
+  let out='<div class="hourly">',n=0;
+  for(let i=0;i<h.time.length;i++){
+    const ms=Date.parse(h.time[i]+':00Z'),lh=new Date(ms+s.lo*36e5).getUTCHours();
+    if(isForecast){if(lh<6||lh>21)continue;}else if(i<s.hi||n>=24)continue;
+    n++;
+    const p=val(h.precipitation_probability,i,null);
+    out+=`<div class="hs${i===s.hi?' now':''}"><div class="hs-t">${pad(lh)}:00</div><span class="hs-i">${wmo(val(h.weathercode,i,0)).i}</span><div class="hs-v">${Math.round(val(h.temperature_2m,i,0))}°</div>${p!=null&&p>=20?`<div class="hs-p">${p}%</div>`:''}</div>`;
+  }
+  document.getElementById('hr-area').innerHTML=out+'</div>';
+}
+function renderRoadbook(d){
+  const area=document.getElementById('rbk-area');if(!area)return;
+  const wxFor=name=>stops.find(x=>x.named&&x.name===name);
+  const rows=d.stops.map(s=>{
+    const w=wxFor(s.n);
+    return`<div class="sch"><div class="sch-t">${s.t||''}</div><div class="sch-n"><b>${s.n}</b>${s.note?`<span>${s.note}</span>`:''}</div><div class="sch-w">${w?`${w.icon} ${w.temp}°`:''}</div><a href="${navUrl(s.lat,s.lon)}" target="_blank" rel="noopener" title="Navegar hasta aquí">↗</a></div>`;
+  }).join('');
+  const it=e=>`<div class="rbk-item"><span class="lbl">${e.k}</span><b>${e.n}</b>${e.p?' · '+e.p:''}${e.tel?` · <a href="${telHref(e.tel)}">${e.tel}</a>`:''}${e.note?`<small>${e.note}</small>`:''}</div>`;
+  const sl=d.sleep?`<div class="rbk-item"><span class="lbl">Hotel</span><b>${d.sleep.n}</b> · <a href="${telHref(d.sleep.tel)}">${d.sleep.tel}</a> · <a href="${searchUrl(d.sleep.q)}" target="_blank" rel="noopener">mapa ↗</a><small>${d.sleep.note}</small></div>`:'';
+  const g=!!loadGpx(d.n);
+  area.innerHTML=`<div class="rbk">
+    <div class="rbk-head" style="border-color:${d.color}">
+      <div class="rbk-day">Día ${d.n} · ${d.label} · ${d.km} km</div>
+      <h3>${d.from} → ${d.to}</h3>
+      <div class="rbk-sub">Salida ${d.sal} · llegada ${d.lle} · ${d.roads}</div>
+    </div>
+    <p class="rbk-desc">${d.desc}</p>
+    ${d.notes.map(n=>`<div class="rbk-note">▲ ${n}</div>`).join('')}
+    <h4>Horario del roadbook</h4>${rows}
+    <h4>Comer, dormir y cenar</h4>${d.eat.map(it).join('')}${sl}
+    <details><summary>No se os olvide</summary><ul>${TRIP.remind.map(r=>`<li>${r}</li>`).join('')}</ul></details>
+    <div class="rbk-src">${g?`Trazado: GPX de la etapa. <button onclick="clearGpx(${d.n})">Quitar GPX</button>`:'Trazado calculado uniendo las paradas: aproximado. Cargad el GPX de la etapa (botón GPX) para el trazado exacto.'}<br>
+    ${isForecast?'Tiempo: previsión para el día y la hora estimada de paso en cada punto, interpolada con el horario del roadbook.':'Aún no hay previsión para esta fecha: se muestra el tiempo actual.'}</div>
+  </div>`;
+}
+function sel(i,quiet){
+  selIdx=i;
+  document.querySelectorAll('.rb-card').forEach((e,j)=>e.classList.toggle('on',j===i));
+  document.querySelectorAll('.wx-node').forEach((e,j)=>e.classList.toggle('active',j===i));
+  renderTele(i);
+  const n=document.getElementById('wxn'+i);if(n)n.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+  if(quiet===true||!mkrs[i]||!map)return;
+  if(cluster)cluster.zoomToShowLayer(mkrs[i],()=>{try{mkrs[i].openPopup();}catch(e){}});
+}
+
+/* ════════════════ Cálculo común ════════════════ */
+async function computeAndRender({coords,wps,day,color}){
+  const cum=cumDist(coords),total=cum[cum.length-1];
+  const proj=projectStops(coords,cum,wps);
+  const anchors=day?buildAnchors(day,wps,proj):[];
+  drawRoute(coords,wps,color,day);
+  const pts=samplePoints(coords,cum,proj,wps);
+  st(`Consultando ${day?'la previsión':'el tiempo'} en ${pts.length} puntos…`);
+  let data,fc=!!day;
+  try{data=await fetchWx(pts,day?day.date:null);}
+  catch(e){if(!day)throw e;fc=false;data=await fetchWx(pts,null);}
+  isForecast=fc;selIdx=0;
+  stops=pts.map((p,i)=>{let k=0;proj.forEach((q,j)=>{if(q.km<=p.km+0.01)k=j;});return buildStop(p,data[i]||data[0],fc,anchors,wps[k].lo);});
+  addWxMarkers();renderSidebar();renderWxBand();
+  return{total,fc};
+}
+
+/* ════════════════ Ruta libre ════════════════ */
+function lock(b){document.getElementById('btn').disabled=b;}
+function resetBand(){const b=document.getElementById('wx-band');b.classList.remove('visible');b.innerHTML='';}
+function fail(e){st('Error: '+e.message,'err');document.getElementById('sidebar').innerHTML=`<div class="empty"><p style="color:#dc2626">⚠ ${e.message}</p></div>`;}
+
+async function run(){
+  if(mode!=='free')return;
+  const vals=getWpValues();if(vals.length<2)return;
+  lock(true);stops=[];mkrs=[];resetBand();
+  try{
+    st(`Geocodificando ${vals.length} ciudades…`);
+    let gp=await Promise.all(vals.map(v=>geo(v)));
+    if(gp.length>2){st('Optimizando orden de paradas…');gp=optimiseOrder(gp);const inp=document.querySelectorAll('.wp-input');gp.forEach((p,i)=>{if(inp[i])inp[i].value=p.name;});}
+    st('Calculando ruta…');
+    const r=await osrm(gp,false);
+    const wps=gp.map(p=>({n:p.name,lat:p.lat,lon:p.lon,lo:localOff()}));
+    const {total}=await computeAndRender({coords:r.coords,wps,day:null,color:'#EAB308'});
+    const dm=Math.round(r.duration/60),h=Math.floor(dm/60),mm=dm%60;
+    const via=gp.length>2?` · ${gp.length-2} parada(s) intermedia(s)`:'';
+    st(`${gp[0].name} → ${gp[gp.length-1].name}${via} · ${Math.round(total)} km · ${h}h ${mm}min · ${stops.filter(s=>s.alert).length} avisos`,'go');
+  }catch(e){fail(e);}
+  lock(false);
+}
+
+/* ════════════════ Roadbook ════════════════ */
+function renderStageBar(){
+  const t=todayStage();
+  document.getElementById('stage-chips').innerHTML=TRIP.days.map(d=>`
+    <button class="chip${curDay&&curDay.n===d.n?' on':''}${t===d.n?' today':''}" style="--c:${d.color}" onclick="runStage(${d.n})">
+      <span class="d"><b>D${d.n}</b>${d.label}</span>
+      <span class="r">${d.from.replace(' de la Torre','')} → ${d.to.replace(' de la Torre','')}</span>
+      <span class="k">${d.km} km · ${d.sal}</span>
+    </button>`).join('');
+  const gb=document.getElementById('gpx-btn'),has=curDay&&loadGpx(curDay.n);
+  gb.classList.toggle('loaded',!!has);
+  gb.firstChild.nodeValue=has?'GPX ✓':'GPX';
+  gb.querySelector('small').textContent=curDay?`DÍA ${curDay.n}`:'CARGAR';
+  const on=document.querySelector('.chip.on');if(on)on.scrollIntoView({inline:'center',block:'nearest'});
+}
+async function runStage(n){
+  const day=TRIP.days.find(d=>d.n===n);if(!day)return;
+  if(mode!=='rb')setMode('rb',true);
+  curDay=day;saveState();renderStageBar();
+  stops=[];mkrs=[];resetBand();
+  try{
+    const wps=day.stops.map(s=>{const lo=s.lo??day.lo;return{...s,lo,o:s.o??day.o??lo};});
+    let coords=loadGpx(n);
+    if(!coords){st(`Día ${n} · calculando el trazado…`);coords=(await osrm(wps,day.avoid)).coords;}
+    const {total,fc}=await computeAndRender({coords,wps,day,color:day.color});
+    if(curDay!==day)return;
+    const ahead=Math.round((Date.parse(day.date+'T12:00:00Z')-Date.now())/864e5);
+    const fcTxt=!fc?'sin previsión aún: tiempo actual':ahead<=0?'previsión de hoy':ahead===1?'previsión para mañana':ahead>7?`previsión a ${ahead} días, orientativa`:`previsión a ${ahead} días`;
+    st(`Día ${n} · ${day.label} · ${Math.round(total)} km${loadGpx(n)?' (GPX)':''} · ${fcTxt} · ${stops.filter(s=>s.alert).length} avisos`,'go');
+  }catch(e){fail(e);}
+}
+function setMode(m,silent){
+  mode=m;
+  document.body.classList.toggle('stage',m==='rb');
+  document.getElementById('stagebar').classList.toggle('visible',m==='rb');
+  document.getElementById('mode-btn').classList.toggle('on',m==='rb');
+  if(m!=='rb')curDay=null;
+  saveState();
+  if(m==='rb'){renderStageBar();if(!silent)runStage((curDay&&curDay.n)||todayStage()||1);}
+  else st('Listo — introduce tu ruta y pulsa calcular','spin');
+}
+function toggleMode(){setMode(mode==='rb'?'free':'rb');}
+
+/* GPX por etapa: se guarda en el navegador para no tener que volver a cargarlo */
+function loadGpx(n){
+  if(gpxCache[n])return gpxCache[n];
+  try{const s=localStorage.getItem('stratus-gpx-'+n);if(s){gpxCache[n]=JSON.parse(s);return gpxCache[n];}}catch(e){}
+  return null;
+}
+function clearGpx(n){delete gpxCache[n];try{localStorage.removeItem('stratus-gpx-'+n);}catch(e){}runStage(n);}
+document.getElementById('gpx-input').addEventListener('change',async e=>{
+  const f=e.target.files[0];e.target.value='';
+  if(!f)return;
+  if(!curDay){st('Elige primero la etapa y luego carga su GPX','err');return;}
+  try{
+    const doc=new DOMParser().parseFromString(await f.text(),'application/xml');
+    let pts=[...doc.getElementsByTagName('trkpt')];if(pts.length<2)pts=[...doc.getElementsByTagName('rtept')];
+    if(pts.length<2)throw new Error('el fichero no trae track');
+    let c=pts.map(p=>[+(+p.getAttribute('lon')).toFixed(5),+(+p.getAttribute('lat')).toFixed(5)]);
+    if(c.length>5000){const k=Math.ceil(c.length/5000);c=c.filter((x,i)=>i%k===0||i===c.length-1);}
+    const s0=curDay.stops[0],s1=curDay.stops[curDay.stops.length-1];
+    const d0=Math.round(hav(c[0],[s0.lon,s0.lat])),d1=Math.round(hav(c[c.length-1],[s1.lon,s1.lat]));
+    if((d0>25||d1>25)&&!confirm(`Este GPX empieza a ${d0} km de ${s0.n} y acaba a ${d1} km de ${s1.n}. ¿Seguro que es el del día ${curDay.n}?`))return;
+    gpxCache[curDay.n]=c;
+    try{localStorage.setItem('stratus-gpx-'+curDay.n,JSON.stringify(c));}catch(err){}
+    runStage(curDay.n);
+  }catch(err){st('GPX no válido: '+err.message,'err');}
+});
+
+/* ════════════════ GPS en ruta ════════════════ */
+let gpsWatchId=null,gpsMarker=null,wakeLock=null,lastSpokenStop=-1,lastNearest=-1;
+let drivingMode=false,speechUnlocked=false;
+function unlockSpeech(){
+  if(speechUnlocked||!('speechSynthesis' in window))return;
+  const u=new SpeechSynthesisUtterance('');u.volume=0;speechSynthesis.speak(u);speechUnlocked=true;
+}
+function placeGps(lat,lon){
+  if(!map)return;
+  if(!gpsMarker){
+    gpsMarker=L.marker([lat,lon],{icon:L.divIcon({className:'',html:'<div class="gps-dot pulse"></div>',iconSize:[18,18],iconAnchor:[9,9]}),zIndexOffset:1000}).addTo(map);
+  }else gpsMarker.setLatLng([lat,lon]);
+}
+async function toggleGps(){
+  unlockSpeech();
+  const btn=document.getElementById('gps-btn');
+  if(gpsWatchId!==null){
+    navigator.geolocation.clearWatch(gpsWatchId);gpsWatchId=null;
+    if(gpsMarker){gpsMarker.remove();gpsMarker=null;}
+    if(wakeLock){try{wakeLock.release();}catch(e){}wakeLock=null;}
+    drivingMode=false;lastNearest=-1;
+    btn.classList.remove('active');btn.innerHTML='📍 GPS';
+    document.getElementById('next-alert').classList.remove('visible');
+    document.getElementById('recenter-btn').style.display='none';
+    if(map&&stops.length)map.fitBounds(L.latLngBounds(stops.map(s=>L.latLng(s.lat,s.lon))),{padding:[40,40],animate:true});
+    return;
+  }
+  if(!navigator.geolocation){alert('GPS no disponible en este navegador.');return;}
+  btn.innerHTML='📍 Localizando…';
+  try{if('wakeLock' in navigator){wakeLock=await navigator.wakeLock.request('screen');}}catch(e){}
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const lat=pos.coords.latitude,lon=pos.coords.longitude;
+    if(map){map.setView([lat,lon],15,{animate:true});placeGps(lat,lon);}
+  },()=>{},{enableHighAccuracy:true,timeout:5000});
+  drivingMode=true;
+  gpsWatchId=navigator.geolocation.watchPosition(onGpsUpdate,onGpsError,{enableHighAccuracy:true,maximumAge:2000,timeout:10000});
+  btn.classList.add('active');btn.innerHTML='📍 En ruta';
+  document.getElementById('recenter-btn').style.display='flex';
+}
+function recenter(){if(gpsMarker&&map)map.setView(gpsMarker.getLatLng(),15,{animate:true});}
+function onGpsError(e){
+  const btn=document.getElementById('gps-btn');btn.classList.remove('active');btn.innerHTML='📍 GPS';
+  st('GPS: '+e.message,'err');
+}
+function onGpsUpdate(pos){
+  if(!map)return;
+  const lat=pos.coords.latitude,lon=pos.coords.longitude;
+  placeGps(lat,lon);
+  if(drivingMode)map.setView([lat,lon],15,{animate:true,duration:1});
+  if(!stops.length)return;
+  let nearest=-1,nd=Infinity;
+  stops.forEach((s,i)=>{const d=hav([lon,lat],[s.lon,s.lat]);if(d<nd){nd=d;nearest=i;}});
+  const kmDone=stops[nearest].km,kmTotal=stops[stops.length-1].km;
+  st(`En ruta · ${kmDone} km recorridos · ${kmTotal-kmDone} km restantes · ${Math.round(kmDone/Math.max(1,kmTotal)*100)}% completado`,'go');
+  let found=false;
+  for(let i=nearest;i<Math.min(nearest+3,stops.length);i++){
+    const msg=stops[i].alert;if(!msg)continue;
+    const d=Math.round(hav([lon,lat],[stops[i].lon,stops[i].lat]));
+    if(d<30){
+      document.getElementById('next-alert-text').textContent=`${msg} — en ~${d} km`;
+      document.getElementById('next-alert').classList.add('visible');found=true;
+      if(i!==lastSpokenStop&&speechUnlocked&&'speechSynthesis' in window){
+        lastSpokenStop=i;
+        const utt=new SpeechSynthesisUtterance(`Atención. ${msg}. En aproximadamente ${d} kilómetros.`);
+        utt.lang='es-ES';utt.rate=0.9;utt.volume=1;speechSynthesis.cancel();speechSynthesis.speak(utt);
+      }
+      break;
+    }
+  }
+  if(!found)document.getElementById('next-alert').classList.remove('visible');
+  if(nearest!==lastNearest){lastNearest=nearest;sel(nearest,true);}
+}
+
+/* ════════════════ Arranque ════════════════ */
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&mode==='free'&&e.target.classList&&e.target.classList.contains('wp-input'))run();});
+window.addEventListener('resize',()=>{setTimeout(()=>map&&map.invalidateSize(),200);});
+window.addEventListener('orientationchange',()=>{setTimeout(()=>map&&map.invalidateSize(),400);});
+updateWpLabels();
+(function init(){
+  let s={};try{s=JSON.parse(localStorage.getItem('stratus-state')||'{}');}catch(e){}
+  const t=todayStage();
+  if(t)runStage(t);                       // durante el viaje abre la etapa del día
+  else if(s.mode==='rb')runStage(s.day||1);
+})();
+
+// ── Service Worker para caché básico ──
+if('serviceWorker' in navigator){
+  const swCode=`
+const CACHE='stratus-v2';
+const STATIC=[
+  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
+  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+  'https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css',
+  'https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css',
+  'https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js'
+];
+self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(STATIC).catch(()=>{}))));
+self.addEventListener('fetch',e=>{
+  const url=e.request.url;
+  if(url.includes('tile.openstreetmap.org')){
+    e.respondWith(caches.open(CACHE).then(c=>c.match(e.request).then(r=>r||fetch(e.request).then(res=>{c.put(e.request,res.clone());return res;}).catch(()=>new Response('',{status:503})))));
+    return;
+  }
+  if(STATIC.some(s=>url.includes(s.split('/').pop()))){
+    e.respondWith(caches.open(CACHE).then(c=>c.match(e.request).then(r=>r||fetch(e.request))));
+  }
+});`;
+  const swBlob=new Blob([swCode],{type:'application/javascript'});
+  navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(()=>{});
+}
+</script>
+</body>
+</html>
