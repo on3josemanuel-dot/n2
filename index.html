@@ -336,180 +336,194 @@ body.stage .searchbar{display:none}
 const TRIP={
   title:'La N2 entera · 18–23 oct 2026',
   remind:[
-    'Portugal va 1 h por detrás: se gana el día 2 y se pierde el 6.',
-    'Repostar a los 180 km siempre, aunque quede depósito. Con nueve motos, 15–20 min por repostaje.',
-    'Efectivo: 100–150 € por cabeza. Tasca da Quinta y O Medronho no tienen datáfono.',
-    'Dos grupos con guía delante y escoba detrás. Flechado en cruces: el segundo señala hasta que pasa la escoba.',
-    'GPX cargados como track, no como ruta. Evitar autopistas los días 2, 3, 4 y 5.',
+    'Portugal va 1 h por detrás: se gana el día 2 en la frontera de Segura y se pierde el 6 en Ayamonte.',
+    'GPX como track, no como ruta, y que el GPS no recalcule. Si recalcula, evitar autopistas los días 2, 3, 4 y 5.',
+    'Repostar a los 180 km siempre. Huecos largos: Llerena–Mérida (d1), Covilhã–Celorico (d2), Góis–Sertã (d4) y Ferreira–Almodôvar (d5).',
+    'Efectivo: 100–150 € por cabeza. O Medronho y A Toca do Coelho no tienen datáfono.',
+    'El día 1 sois ocho; desde Cáceres, nueve. Dos grupos con guía delante y escoba detrás; el segundo flecha los cruces.',
+    'Peajes: ninguno. El puente del Guadiana es gratis: no paréis en las máquinas.',
+    'Pendiente: reservar Pensão Flávia (lun), plaza en el Parque Saba de Faro y preguntar en el Don Carlos por las motos en Cáceres.',
     'Asistencia en carretera con cobertura en Portugal: verificadla.',
     'Emergencias: 112 en España y en Portugal.'
   ],
   days:[
-  {n:1,date:'2026-10-18',label:'dom 18',from:'Alhaurín de la Torre',to:'Cáceres',km:434,sal:'07:45',lle:'16:45',
+  {n:1,date:'2026-10-18',label:'dom 18',from:'Alhaurín de la Torre',to:'Cáceres',km:434,sal:'07:45',lle:'17:15',
    roads:'A-357 · Sierra Norte · A-66',color:'#f97316',avoid:false,lo:2,
-   desc:'Salida por El Chorro y Ardales, campiña por Osuna y subida a Extremadura por la Sierra Norte de Sevilla: Lora del Río, Constantina y Guadalcanal. Los últimos 170 km van por la Vía de la Plata.',
+   desc:'Nada de autovía hasta Sevilla. Salida por El Chorro y Ardales, campiña por Osuna y subida a Extremadura por la Sierra Norte de Sevilla: Lora del Río, Constantina y Guadalcanal. Los últimos 170 km, por la Vía de la Plata.',
    notes:[
-     'Hoy sois ocho: el noveno se incorpora directamente en Cáceres. Dadle el teléfono del guía y la hora prevista de llegada.',
+     'Hoy sois ocho: el noveno sale de Sevilla por su cuenta y se incorpora en Cáceres. Dadle el teléfono del guía y la hora de llegada.',
      'Se sale 17 min antes de amanecer (08:28). Corzos y jabalíes en la Sierra Norte: ritmo suave hasta que salga el sol.',
-     'OLIVAE no tiene garaje y está en casco histórico restringido: preguntad por las nueve motos en el Hotel Don Carlos.'
+     'Entre Llerena y Cáceres son 173 km del tirón. Si salís tarde de comer, el último repostaje cómodo es Mérida.',
+     'OLIVAE no tiene garaje y está en casco histórico restringido: llamad al Hotel Don Carlos y preguntad por las nueve motos.'
    ],
    stops:[
      {n:'Alhaurín de la Torre',lat:36.6640,lon:-4.5610,t:'07:45',note:'Salida'},
-     {n:'Ardales',lat:36.8780,lon:-4.8470,t:'08:45',note:'Café · El Chorro y los pantanos'},
+     {n:'Ardales',lat:36.8780,lon:-4.8470,t:'08:30',note:'Café · El Chorro y los pantanos'},
      {n:'Campillos',lat:37.0480,lon:-4.8620,t:'09:15',note:'Repostaje'},
-     {n:'Osuna',lat:37.2370,lon:-5.1030,t:'09:50'},
+     {n:'Osuna',lat:37.2370,lon:-5.1030,t:'10:00'},
      {n:'Lora del Río',lat:37.6590,lon:-5.5270,t:'11:15',note:'El Guadalquivir'},
-     {n:'Constantina',lat:37.8700,lon:-5.6170,t:'12:00',note:'Sierra Norte'},
-     {n:'Guadalcanal',lat:38.0950,lon:-5.8180,t:'12:50',note:'La raya de Extremadura'},
-     {n:'Llerena',lat:38.2330,lon:-6.0160,t:'13:20',note:'Comida'},
+     {n:'Constantina',lat:37.8700,lon:-5.6170,t:'11:50',note:'Sierra Norte · café largo'},
+     {n:'Guadalcanal',lat:38.0950,lon:-5.8180,t:'12:45',note:'La raya de Extremadura'},
+     {n:'Llerena',lat:38.2330,lon:-6.0160,t:'13:05',note:'Comida'},
      {n:'Almendralejo',lat:38.6830,lon:-6.4070},
-     {n:'Mérida',lat:38.9160,lon:-6.3440,t:'15:30',note:'Teatro romano, 20 min de desvío'},
-     {n:'Cáceres',lat:39.4750,lon:-6.3720,t:'16:45',note:'Noche 1'}
+     {n:'Mérida',lat:38.9160,lon:-6.3440,t:'15:50',note:'Parada corta · teatro romano'},
+     {n:'Cáceres',lat:39.4750,lon:-6.3720,t:'17:15',note:'Noche 1'}
    ],
-   sleep:{n:'OLIVAE Hostal Boutique',q:'OLIVAE Hostal Boutique Cáceres',tel:'+34 927 22 55 27',note:'Reservado. Recepción en el Hotel Don Carlos, a 10 m.'},
+   sleep:{n:'OLIVAE Hostal Boutique',q:'OLIVAE Hostal Boutique Cáceres',tel:'+34 927 22 55 27',note:'Reservado. C/ Roso de Luna 3. Recepción en el Hotel Don Carlos, a 10 m.'},
    eat:[
-     {k:'Comida',n:'El Bodegón',p:'Llerena',tel:'+34 666 99 69 77',note:'Cocina extremeña. El domingo abre.'},
-     {k:'Cena',n:'alBalat',p:'Cáceres',note:'Menú de tres platos con vino, 19 €.'}
+     {k:'Café',n:'Bar El Alcornoque',p:'Constantina',tel:'+34 955 88 10 72',note:'Domingos de 8:00 a 16:00. Tostadas y terraza.'},
+     {k:'Antes',n:'Los Fogones de la Sierra',p:'Lora del Río',tel:'+34 722 72 31 11',note:'Por si alguien necesita parar antes.'},
+     {k:'Comida',n:'El Bodegón',p:'Llerena',tel:'+34 666 99 69 77',note:'C/ Bodegones 13. Cocina extremeña. El domingo abre.'},
+     {k:'Plan B',n:'Alquitara Gastro Lounge',p:'Llerena',note:'Perdiz con judías e ibéricos. El domingo abre.'},
+     {k:'Cena',n:'alBalat',p:'Cáceres',note:'Av. Ruta de la Plata 4. Menú de tres platos con vino, 19 €.'},
+     {k:'Plan B',n:'Nolasco',p:'Cáceres',note:'Menú extremeño. El domingo abre.'}
    ]},
 
-  {n:2,date:'2026-10-19',label:'lun 19',from:'Cáceres',to:'Chaves',km:434,sal:'07:15',lle:'15:45',
+  {n:2,date:'2026-10-19',label:'lun 19',from:'Cáceres',to:'Chaves',km:434,sal:'07:15',lle:'16:50',
    roads:'Alcántara · EN339 · Trás-os-Montes',color:'#dc2626',avoid:true,lo:1,
-   desc:'La etapa más variada. Portugal por el puente romano de Alcántara y la frontera de Segura, subida a la Torre (1.993 m) por Covilhã y bajada por Gouveia, Celorico y Trancoso hasta el Duero en Foz Côa. Final por Mirandela y Valpaços.',
+   desc:'La etapa más variada. Portugal por el puente romano de Alcántara y la frontera de Segura, subida a la Torre (1.993 m) por Covilhã, bajada por Celorico y Trancoso hasta el Duero en Foz Côa, y final por Mirandela y Valpaços.',
    notes:[
-     'Atrasad el reloj una hora en Segura. Desde Penamacor, hora portuguesa.',
-     'La Torre: 43 km por encima de 1.500 m, 5–10 °C y niebla posible. Si nieva cortan la EN339. Plan B: de Covilhã por Guarda hasta Celorico (+30 km).',
-     'Repostaje obligatorio en Covilhã: arriba no hay gasolineras. Hueco largo hasta Celorico.',
+     'Atrasad el reloj una hora en Segura. Desde ahí, hora portuguesa.',
+     'La Torre: mirad el parte la víspera. 43 km por encima de 1.500 m, 5–10 °C y niebla. Si cortan la EN339, de Covilhã por Guarda a Celorico (+30 km).',
+     'Repostaje obligatorio en Covilhã: arriba no hay gasolineras.',
      'Salida 58 min antes de amanecer (08:40). N-521 hasta Brozas: corzos y jabalíes.',
-     'Kantara Al Saif (Alcántara) cierra los lunes: café en el bar del Hotel Puente Romano.'
+     'Kantara Al Saif (Alcántara) cierra los lunes: café en el bar del Hotel Puente Romano.',
+     'Pensão Flávia está SIN RESERVAR: llamad ya y avisad de que sois nueve. La cocina cierra a las 21:00.'
    ],
    stops:[
      {n:'Cáceres',lat:39.4750,lon:-6.3720,t:'07:15',lo:2,note:'Salida, de noche'},
      {n:'Brozas',lat:39.6130,lon:-6.7760,lo:2},
-     {n:'Alcántara',lat:39.7190,lon:-6.8840,t:'08:30',lo:2,note:'Café y puente romano'},
-     {n:'Segura',lat:39.8280,lon:-6.9800,t:'09:15',o:2,note:'Frontera · reloj −1 h'},
-     {n:'Penamacor',lat:40.1670,lon:-7.1710,t:'09:30'},
-     {n:'Covilhã',lat:40.2830,lon:-7.5000,t:'10:45',note:'Repostaje obligatorio'},
-     {n:'La Torre',lat:40.3217,lon:-7.6131,t:'11:45',note:'1.993 m · techo de Portugal'},
-     {n:'Gouveia',lat:40.4942,lon:-7.5914},
-     {n:'Celorico da Beira',lat:40.6364,lon:-7.3925,t:'13:00',note:'Comida'},
-     {n:'Trancoso',lat:40.7786,lon:-7.3486,t:'14:00'},
-     {n:'Vila Nova de Foz Côa',lat:41.0817,lon:-7.1414,t:'14:45',note:'El Duero'},
-     {n:'Mirandela',lat:41.4856,lon:-7.1817},
+     {n:'Alcántara',lat:39.7190,lon:-6.8840,t:'08:25',lo:2,note:'Café y puente romano'},
+     {n:'Segura',lat:39.8280,lon:-6.9800,t:'09:10',o:2,note:'Frontera · reloj −1 h'},
+     {n:'Penamacor',lat:40.1670,lon:-7.1710,t:'09:10'},
+     {n:'Covilhã',lat:40.2830,lon:-7.5000,t:'09:55',note:'Repostaje obligatorio'},
+     {n:'La Torre',lat:40.3217,lon:-7.6131,t:'10:35',note:'1.993 m · techo de Portugal'},
+     {n:'Celorico da Beira',lat:40.6364,lon:-7.3925,t:'12:10',note:'Casa do Queijo'},
+     {n:'Trancoso',lat:40.7786,lon:-7.3486,t:'12:50',note:'Villa amurallada'},
+     {n:'Vila Nova de Foz Côa',lat:41.0817,lon:-7.1414,t:'13:30',note:'Comida sobre el Duero'},
+     {n:'Mirandela',lat:41.4856,lon:-7.1817,t:'15:40',note:'La alheira'},
      {n:'Valpaços',lat:41.6075,lon:-7.3111},
-     {n:'Chaves',lat:41.7400,lon:-7.4708,t:'15:45',note:'Noche 2 · marco del km 0'}
+     {n:'Chaves',lat:41.7400,lon:-7.4708,t:'16:50',note:'Noche 2 · marco del km 0'}
    ],
-   sleep:{n:'Hotel Premium Chaves – Aquae Flaviae',q:'Hotel Premium Chaves Aquae Flaviae',tel:'+351 276 309 000',note:'Reservado. Aparcamiento exterior amplio y gratuito.'},
+   sleep:{n:'Hotel Premium Chaves – Aquae Flaviae',q:'Hotel Premium Chaves Aquae Flaviae',tel:'+351 276 309 000',note:'Reservado. Praça Brasil. Aparcamiento exterior amplio y gratuito.'},
    eat:[
-     {k:'Comida',n:'O Sítio',p:'Celorico da Beira',tel:'+351 933 840 710',note:'Lunes de 12:00 a 14:30.'},
+     {k:'Café',n:'Bar del Hotel Puente Romano',p:'Alcántara',note:'Junto al puente. El Kantara Al Saif cierra los lunes.'},
      {k:'Queso',n:'Casa do Queijo',p:'Celorico da Beira',tel:'+351 271 149 375',note:'Queijo Serra da Estrela para llevar.'},
-     {k:'Cena',n:'Pensão Flávia',p:'Chaves',tel:'+351 961 693 890',note:'Sin carta, decide el chef. La cocina cierra a las 21:00.'},
-     {k:'Plan B',n:'Biclaque Trajano',p:'Chaves',tel:'+351 276 096 190',note:'Más fino, hay que reservar.'}
+     {k:'Comida',n:'Restaurante Côa Museu',p:'Vila Nova de Foz Côa',tel:'+351 932 150 155',note:'Lunes de 10:00 a 18:00. Ventanales sobre el Duero.'},
+     {k:'Plan B',n:'Tasquinha do Chefe',p:'Trancoso',tel:'+351 271 817 164',note:'Para comer antes y llegar más pronto.'},
+     {k:'Cena',n:'Pensão Flávia',p:'Chaves',tel:'+351 961 693 890',note:'POR RESERVAR. Sin carta, decide el chef. Cocina hasta las 21:00.'},
+     {k:'Plan B',n:'Biclaque Trajano',p:'Chaves',tel:'+351 276 096 190',note:'Más fino. Hay que reservar.'},
+     {k:'Tarde',n:'Memórias nas Caldas',p:'Chaves',tel:'+351 933 867 013',note:'Petiscos de 16:00 a 02:00.'}
    ]},
 
   {n:3,date:'2026-10-20',label:'mar 20',from:'Chaves',to:'Viseu',km:169,sal:'07:45',lle:'13:00',
    roads:'N2 · km 0–172',color:'#8b5cf6',avoid:true,lo:1,
-   desc:'Arranca la N2 en el marco del km 0. Villas termales de Vidago y Pedras Salgadas, bajada al Duero por Vila Real y Peso da Régua y cruce de la Serra de Montemuro, el mejor tramo revirado de la carretera.',
+   desc:'Arranca la N2 en el marco del km 0. Villas termales de Vidago y Pedras Salgadas, bajada al Duero por Vila Real y Peso da Régua y cruce de la Serra de Montemuro, el mejor tramo revirado de la carretera. Tarde libre en Viseu.',
    notes:[
-     'Sale frío: 6–10 °C a primera hora en Trás-os-Montes. Contad con carretera mojada.',
+     'Sale frío: 6–10 °C a primera hora. Contad con carretera mojada.',
+     'Hoy se come al llegar a Viseu. Desayunad fuerte en Chaves: en Vidago a las 8:05 aún está todo cerrado.',
      'Hueco de gasolineras entre Vila Pouca de Aguiar y Vila Real.',
-     'El Bataclan de Vidago cierra los martes. Tasca da Quinta (Régua): solo efectivo.'
+     'São Pedro do Sul (termas romanas y sello del pasaporte) queda a 12 km de la N2.'
    ],
    stops:[
      {n:'Chaves',lat:41.7378,lon:-7.4693,t:'07:45',note:'Foto en el marco del km 0'},
-     {n:'Vidago',lat:41.6342,lon:-7.5717},
-     {n:'Pedras Salgadas',lat:41.5408,lon:-7.6017,t:'08:20',note:'Villas termales'},
-     {n:'Vila Pouca de Aguiar',lat:41.4997,lon:-7.6436,t:'08:45',note:'Café'},
-     {n:'Vila Real',lat:41.3006,lon:-7.7441,t:'10:00',note:'Repostaje · Chaxoila'},
-     {n:'São Leonardo de Galafura',lat:41.2064,lon:-7.7275,t:'11:15',note:'Mirador del Duero'},
-     {n:'Peso da Régua',lat:41.1631,lon:-7.7869,t:'11:45'},
-     {n:'Lamego',lat:41.0975,lon:-7.8097,t:'12:15',note:'La escalinata'},
-     {n:'Castro Daire',lat:40.8986,lon:-7.9336,t:'12:15',note:'São Pedro do Sul a 12 km'},
-     {n:'Viseu',lat:40.6566,lon:-7.9125,t:'13:00',note:'Noche 3'}
+     {n:'Vidago',lat:41.6342,lon:-7.5717,t:'08:05',note:'Villa termal'},
+     {n:'Pedras Salgadas',lat:41.5408,lon:-7.6017,t:'08:45'},
+     {n:'Vila Pouca de Aguiar',lat:41.4997,lon:-7.6436},
+     {n:'Vila Real',lat:41.3006,lon:-7.7441,t:'09:20',note:'Repostaje'},
+     {n:'Peso da Régua',lat:41.1631,lon:-7.7869,t:'10:00',note:'El Duero · mirador de Galafura'},
+     {n:'Lamego',lat:41.0975,lon:-7.8097,t:'10:55',note:'La escalinata'},
+     {n:'Bigorne',lat:40.9850,lon:-7.8740,t:'11:45',note:'Serra de Montemuro'},
+     {n:'Castro Daire',lat:40.8986,lon:-7.9336,t:'12:05'},
+     {n:'Viseu',lat:40.6566,lon:-7.9125,t:'13:00',note:'Noche 3 · se come al llegar'}
    ],
    sleep:{n:'Hotel Grão Vasco',q:'Hotel Grão Vasco Viseu',tel:'+351 232 423 511',note:'Reservado. Aparcamiento propio gratuito.'},
    eat:[
-     {k:'Comida',n:'Casa de Pasto Chaxoila',p:'Vila Real',tel:'+351 259 322 654',note:'Sobre la propia N2. El martes abre.'},
-     {k:'Cena',n:'Casa Arouquesa',p:'Viseu',note:'Carne arouquesa a la brasa.'},
-     {k:'Plan B',n:'Restaurante Porta',p:'Viseu',tel:'+351 963 754 021',note:'Junto a la catedral. Arroz de polvo por encargo.'}
+     {k:'Comida',n:'Restaurante Porta',p:'Viseu',tel:'+351 963 754 021',note:'Praça de D. Duarte, junto a la catedral. Arroz de polvo por encargo.'},
+     {k:'Plan B',n:'A Púcara',p:'Viseu',note:'Arroz de carqueja. El martes abre.'},
+     {k:'Cena',n:'Casa Arouquesa',p:'Viseu',note:'Carne arouquesa a la brasa. El martes abre.'}
    ]},
 
-  {n:4,date:'2026-10-21',label:'mié 21',from:'Viseu',to:'Abrantes',km:204,sal:'07:30',lle:'13:45',
+  {n:4,date:'2026-10-21',label:'mié 21',from:'Viseu',to:'Abrantes',km:205,sal:'07:45',lle:'15:25',
    roads:'N2 · km 172–400',color:'#3b82f6',avoid:true,lo:1,
-   desc:'El día con más curvas por kilómetro. Penacova sobre el Mondego y el tramo de Góis y Pedrógão Grande entre pinares, el más revirado de los 738 km. Final por el valle del Tajo.',
+   desc:'El día con más curvas por kilómetro. Penacova sobre el Mondego y el tramo de Góis y Pedrógão Grande entre pinares, el más revirado de los 738 km. Final por Sardoal al valle del Tajo.',
    notes:[
-     'Hueco de gasolineras entre Lousã y Pedrógão Grande: repostad en Penacova.',
+     'Repostad en Penacova: hueco de gasolineras entre Góis y Sertã.',
      'La Tasquinha da Vila (Vila de Rei) cierra los miércoles. Recambio: A Toca do Coelho, menú de 10 €, solo efectivo.',
      'Cierran también hoy Sabores do Pinhal (Sertã) y Chef Victor Felisberto (Abrantes).'
    ],
    stops:[
-     {n:'Viseu',lat:40.6566,lon:-7.9125,t:'07:30',note:'Salida'},
+     {n:'Viseu',lat:40.6566,lon:-7.9125,t:'07:45',note:'Salida'},
      {n:'Tondela',lat:40.5172,lon:-8.0800},
      {n:'Santa Comba Dão',lat:40.3989,lon:-8.1314},
-     {n:'Penacova',lat:40.2700,lon:-8.2817,t:'09:30',note:'Café y repostaje'},
-     {n:'Vila Nova de Poiares',lat:40.2106,lon:-8.2581},
-     {n:'Góis',lat:40.1556,lon:-8.1111,t:'11:00',note:'Puente medieval'},
-     {n:'Pedrógão Grande',lat:39.9172,lon:-8.1453,t:'12:45'},
-     {n:'Sertã',lat:39.8008,lon:-8.1006,t:'13:15',note:'Comida'},
-     {n:'Vila de Rei',lat:39.6758,lon:-8.1447,t:'14:00',note:'Centro geodésico, a 3 km'},
-     {n:'Abrantes',lat:39.4636,lon:-8.1975,t:'13:45',note:'Noche 4'}
+     {n:'Penacova',lat:40.2700,lon:-8.2817,t:'09:10',note:'Café y repostaje · mirador'},
+     {n:'Góis',lat:40.1556,lon:-8.1111,t:'10:45',note:'Puente medieval'},
+     {n:'Pedrógão Grande',lat:39.9172,lon:-8.1453,t:'12:10'},
+     {n:'Sertã',lat:39.8008,lon:-8.1006,t:'12:55',note:'Comida'},
+     {n:'Vila de Rei',lat:39.6758,lon:-8.1447,t:'14:35',note:'Centro geodésico, a 3 km'},
+     {n:'Abrantes',lat:39.4636,lon:-8.1975,t:'15:25',note:'Noche 4'}
    ],
    sleep:{n:'Luna Hotel Turismo',q:'Luna Hotel Turismo Abrantes',tel:'+351 241 247 110',note:'Reservado. Aparcamiento amplio.'},
    eat:[
+     {k:'Café',n:"Alvaro's",p:'Góis',tel:'+351 235 772 271',note:'Desde las 8:30. Café con algo sólido.'},
      {k:'Comida',n:'Ponte Velha',p:'Sertã',tel:'+351 274 600 160',note:'Raciones descomunales. El miércoles abre.'},
-     {k:'Recambio',n:'A Toca do Coelho',p:'Vila de Rei',tel:'+351 274 898 681',note:'Menú de 10 €. Solo efectivo.'},
-     {k:'Cena',n:'O Ramiro',p:'Abrantes',tel:'+351 241 881 263',note:'Cocina ribatejana. El miércoles abre.'}
+     {k:'Plan B',n:'A Toca do Coelho',p:'Vila de Rei',tel:'+351 274 898 681',note:'Menú de 10 €. Solo efectivo.'},
+     {k:'Cena',n:'O Ramiro',p:'Abrantes',tel:'+351 241 881 263',note:'Cocina ribatejana. El miércoles abre.'},
+     {k:'Plan B',n:'Cascata',p:'Abrantes',note:'Arroz de pato.'}
    ]},
 
-  {n:5,date:'2026-10-22',label:'jue 22',from:'Abrantes',to:'Faro',km:335,sal:'07:00',lle:'16:30',
+  {n:5,date:'2026-10-22',label:'jue 22',from:'Abrantes',to:'Faro',km:338,sal:'07:45',lle:'16:15',
    roads:'N2 · km 400–738,5',color:'#14b8a6',avoid:true,lo:1,
    desc:'Alentejo de rectas onduladas por Mora y Montemor-o-Novo, trigo y alcornoques hasta Castro Verde, y remate por la Serra do Caldeirão —55 km de Estrada Património— hasta el marco del km 738.',
    notes:[
-     'El hueco de gasolineras más largo del viaje: 90 km entre Ferreira do Alentejo y Almodôvar. Repostad en Mora y en Castro Verde, sin excepciones.',
-     'Salida 23 min antes de amanecer (07:50). Fauna en el Alentejo.',
-     'Hotel sin aparcamiento: Parque Saba da Pontinha, a 750 m, 24 h. +351 289 824 442.',
+     'El hueco de gasolineras más largo: 90 km entre Ferreira do Alentejo y Almodôvar. Depósito lleno en Abrantes y repostaje en Mora y en Castro Verde, sin excepciones.',
+     'Se come en Almodôvar antes de la sierra. O Medronho: solo efectivo.',
+     'Hotel sin aparcamiento: Parque Saba da Pontinha, a 750 m, 24 h. Reservad plaza: +351 289 824 442.',
      'Mariscada en LODO, a 237 m del hotel: esa noche nadie conduce.'
    ],
    stops:[
-     {n:'Abrantes',lat:39.4636,lon:-8.1975,t:'07:00',note:'Salida'},
-     {n:'Ponte de Sor',lat:39.2483,lon:-8.0106,t:'08:15',note:'Café'},
-     {n:'Montargil',lat:39.0781,lon:-8.1717},
-     {n:'Mora',lat:38.9433,lon:-8.1653,t:'09:30',note:'Repostaje'},
-     {n:'Ciborro',lat:38.7953,lon:-8.2267,t:'10:15',note:'Marco del km 370'},
-     {n:'Montemor-o-Novo',lat:38.6486,lon:-8.2147,t:'10:45'},
-     {n:'Torrão',lat:38.2950,lon:-8.2228,t:'12:00',note:'Embalse de Vale do Gaio'},
+     {n:'Abrantes',lat:39.4636,lon:-8.1975,t:'07:45',note:'Salida'},
+     {n:'Ponte de Sor',lat:39.2483,lon:-8.0106,t:'08:20',note:'Café'},
+     {n:'Montargil',lat:39.0781,lon:-8.1717,t:'09:00',note:'El embalse'},
+     {n:'Mora',lat:38.9433,lon:-8.1653,t:'09:35',note:'Repostaje'},
+     {n:'Montemor-o-Novo',lat:38.6486,lon:-8.2147,t:'10:30'},
+     {n:'Torrão',lat:38.2950,lon:-8.2228,t:'11:15',note:'Vale do Gaio'},
      {n:'Ferreira do Alentejo',lat:38.0569,lon:-8.1167},
      {n:'Aljustrel',lat:37.8775,lon:-8.1650},
-     {n:'Castro Verde',lat:37.6981,lon:-8.0858,t:'14:00',note:'Comida y repostaje obligatorio'},
-     {n:'Almodôvar',lat:37.5111,lon:-8.0597,t:'14:45',note:'Empieza el Caldeirão'},
-     {n:'Barranco do Velho',lat:37.2369,lon:-7.9369},
-     {n:'São Brás de Alportel',lat:37.1517,lon:-7.8883,t:'16:45'},
-     {n:'Faro',lat:37.0270,lon:-7.9290,t:'16:30',note:'Noche 5 · marco del km 738'}
+     {n:'Castro Verde',lat:37.6981,lon:-8.0858,t:'12:30',note:'Repostaje obligatorio'},
+     {n:'Almodôvar',lat:37.5111,lon:-8.0597,t:'13:10',note:'Comida antes de la sierra'},
+     {n:'Barranco do Velho',lat:37.2369,lon:-7.9369,t:'15:00',note:'Serra do Caldeirão'},
+     {n:'São Brás de Alportel',lat:37.1517,lon:-7.8883},
+     {n:'Faro',lat:37.0270,lon:-7.9290,t:'16:15',note:'Noche 5 · marco del km 738'}
    ],
    sleep:{n:'Hotel Sol Algarve by Kavia',q:'Hotel Sol Algarve Faro',tel:'+351 289 895 700',note:'Reservado. Sin garaje: Parque Saba da Pontinha, a 750 m.'},
    eat:[
-     {k:'Café',n:'O Alentejano',p:'Mora',tel:'+351 266 103 265',note:'El jueves abre.'},
-     {k:'Comida',n:'Casa do Alentejo',p:'Castro Verde',tel:'+351 286 327 132',note:'Migas con porco preto. El jueves abre.'},
-     {k:'Cena',n:'LODO Marisqueira',p:'Faro',tel:'+351 968 623 355',note:'Reservado. Percebes y ostras de la Ria Formosa.'},
-     {k:'Plan B',n:'O Chalavar',p:'Faro',tel:'+351 289 825 199',note:'Más barato, a 174 m del hotel.'}
+     {k:'Café',n:'O Alentejano',p:'Mora',tel:'+351 266 103 265',note:'Desde las 9:00. El jueves abre.'},
+     {k:'Comida',n:'Tasquinha O Medronho',p:'Almodôvar',tel:'+351 286 665 322',note:'Porco preto a la brasa. Solo efectivo.'},
+     {k:'Plan B',n:'O Moinho',p:'Almodôvar',note:'Si O Medronho está lleno.'},
+     {k:'Antes',n:'Casa do Alentejo',p:'Castro Verde',tel:'+351 286 327 132',note:'Si preferís comer a las 12:30 y llegar antes.'},
+     {k:'Cena',n:'LODO Marisqueira',p:'Faro',tel:'+351 968 623 355',note:'RESERVADO. Percebes y ostras de la Ria Formosa. 45–60 € por cabeza.'},
+     {k:'Plan B',n:'O Chalavar',p:'Faro',tel:'+351 289 825 199',note:'Más barato, a 174 m del hotel.'},
+     {k:'Plan C',n:'O Murta',p:'Faro',tel:'+351 968 353 448',note:'Cataplana a 42 € para dos.'}
    ]},
 
-  {n:6,date:'2026-10-23',label:'vie 23',from:'Faro',to:'Alhaurín de la Torre',km:430,sal:'08:00',lle:'16:30',
+  {n:6,date:'2026-10-23',label:'vie 23',from:'Faro',to:'Alhaurín de la Torre',km:430,sal:'08:00',lle:'16:00',
    roads:'N-125 · N-431 · A-49 · N-334',color:'#a3a3a3',avoid:false,lo:2,o:1,
-   desc:'Nacional pura hasta Huelva —N-125 hasta la frontera y N-431 entre pinares y marismas—, despedida del compañero en Sevilla y bajada por Osuna y Campillos.',
+   desc:'Nacional pura hasta Huelva —N-125 hasta la frontera y N-431 entre pinares y marismas—, despedida del compañero en Sevilla y bajada por Osuna y Campillos por la N-334.',
    notes:[
      'El compañero de Sevilla termina aquí su viaje: 207 km.',
-     'Adelantad el reloj una hora al cruzar el Guadiana.',
+     'Adelantad el reloj una hora al cruzar el Guadiana. El puente es gratis: no paréis en las máquinas.',
      'Salid de Faro con el depósito lleno.'
    ],
    stops:[
      {n:'Faro',lat:37.0194,lon:-7.9322,t:'08:00',lo:1,note:'Salida por la N-125'},
      {n:'Tavira',lat:37.1272,lon:-7.6486,lo:1},
-     {n:'Ayamonte',lat:37.2133,lon:-7.4067,t:'09:15',note:'Café tras el puente'},
-     {n:'Huelva',lat:37.2614,lon:-6.9447,t:'10:15',note:'Repostaje'},
-     {n:'Sevilla',lat:37.3891,lon:-5.9845,t:'11:45',note:'Despedida'},
-     {n:'Osuna',lat:37.2370,lon:-5.1030,t:'13:30',note:'Comida'},
-     {n:'Campillos',lat:37.0480,lon:-4.8620},
-     {n:'Alhaurín de la Torre',lat:36.6640,lon:-4.5610,t:'16:30',note:'Llegada'}
+     {n:'Ayamonte',lat:37.2133,lon:-7.4067,t:'08:50',note:'Café · reloj +1 h'},
+     {n:'Huelva',lat:37.2614,lon:-6.9447,t:'10:15',note:'Fin de la N-431'},
+     {n:'Sevilla',lat:37.3891,lon:-5.9845,t:'11:35',note:'Despedida'},
+     {n:'Osuna',lat:37.2370,lon:-5.1030,t:'12:55',note:'Comida'},
+     {n:'Campillos',lat:37.0480,lon:-4.8620,t:'14:55'},
+     {n:'Alhaurín de la Torre',lat:36.6640,lon:-4.5610,t:'16:00',note:'Llegada'}
    ],
    sleep:null,
    eat:[
